@@ -1,0 +1,17 @@
+# Installed dependencies
+node_modules/
+
+# Build assets
+dist/
+
+# Mac stuff
+.DS_Store
+
+# Someone's probably using vim
+*.swp
+
+# Logs
+*.log
+
+# Generated reports, such as test outputs, coverage
+reports/

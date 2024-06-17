@@ -1,0 +1,11 @@
+{
+  "extends": ["../.eslintrc"],
+  "parserOptions": {
+    "project": "./test/tsconfig.json"
+  },
+  "plugins": [],
+  "rules": {
+    // Causes issues with node:test
+    "@typescript-eslint/no-floating-promises": "off"
+  }
+}
