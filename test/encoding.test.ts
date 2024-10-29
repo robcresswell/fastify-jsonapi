@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  decodePageCursor,
-  encodePageCursor,
-} from '../src/pagination/encoding.js';
+import { decodePageCursor, encodePageCursor } from '../src/encoding.js';
 
 describe('encoding', () => {
   it('encodes a cursor', () => {

@@ -1,10 +1,9 @@
 import { STATUS_CODES } from 'node:http';
 import type { FastifyPluginAsync, FastifyReply } from 'fastify';
 import fastifyPlugin from 'fastify-plugin';
-import { type PaginationOpts } from './pagination/index.js';
-import { type Item } from './types.js';
-import { assembleLinks } from './pagination/links.js';
-import { parseQuery } from './querystring.js';
+import { Pagination, type Item } from './types.js';
+import { assembleLinks } from './links.js';
+import { parseQuery } from './querystring/parse.js';
 
 const CONTENT_TYPE =
   'application/vnd.api+json; profile="https://jsonapi.org/profiles/ethanresnick/cursor-pagination"';
@@ -25,10 +24,10 @@ declare module 'fastify' {
   }
 }
 
-interface Data<T extends Item> {
+interface Data {
   type: string;
   id: string;
-  attributes: Partial<Omit<T, 'id'>>;
+  attributes: Record<string, unknown> & { id?: never };
   relationships?: Record<string, unknown>;
   links?: Record<string, string | null>;
 }
@@ -37,9 +36,9 @@ async function jsonApiListResponse<T extends Item>(
   this: FastifyReply,
   opts: {
     items: T[];
-    itemMapper: (arg0: T) => Data<T>;
+    itemMapper: (arg0: T) => Data;
     hasMore: boolean;
-    pagination: PaginationOpts<string>;
+    pagination: Pagination<string>;
   },
 ) {
   const { items, itemMapper, hasMore, pagination } = opts;
@@ -109,8 +108,8 @@ function errResponse(err: { statusCode?: number | string; message?: string }) {
 }
 
 const _jsonApiPlugin: FastifyPluginAsync<{
-  setErrorHandler: boolean;
-  setNotFoundHandler: boolean;
+  setErrorHandler?: boolean;
+  setNotFoundHandler?: boolean;
   // eslint-disable-next-line @typescript-eslint/require-await
 }> = async function (
   fastify,

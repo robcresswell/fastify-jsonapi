@@ -4,8 +4,11 @@ import {
   TypeBoxTypeProvider,
   TypeBoxValidatorCompiler,
 } from '@fastify/type-provider-typebox';
-import { jsonApiPlugin } from '../src/plugin.js';
-import { buildQuerySchema } from '../src/querystring.js';
+import {
+  jsonApiPlugin,
+  buildTypeboxQuerySchema,
+  parseQuery,
+} from '../src/index.js';
 
 export async function createTestServer() {
   const server = fastify()
@@ -14,7 +17,7 @@ export async function createTestServer() {
 
   await server.register(jsonApiPlugin);
 
-  const { querySchema } = buildQuerySchema({
+  const querySchema = buildTypeboxQuerySchema({
     sort: [],
     filters: { teamId: Type.String() },
   });
@@ -23,7 +26,7 @@ export async function createTestServer() {
     '/users',
     { schema: { querystring: querySchema } },
     async (req, reply) => {
-      const { filters } = req.parseQuery();
+      const { pagination, filters } = parseQuery(req.query);
 
       const users = getUsers();
 
@@ -32,14 +35,28 @@ export async function createTestServer() {
       );
 
       return reply.list({
-        type: 'users',
-        items: items,
-        relationshipBuilder: ({ teamId }) => {
-          return { team: `https://my-website/teams/${teamId}` };
-        },
-        links: {
-          self: 'https://my-website/users',
-        },
+        items,
+        itemMapper: ({ id, teamId }) => ({
+          type: 'users',
+          id,
+          attributes: {},
+          relationships: {
+            team: {
+              links: {
+                self: `https://my-website/teams/${teamId}`,
+              },
+              data: {
+                type: 'teams',
+                id: teamId,
+              },
+            },
+          },
+          links: {
+            self: 'https://my-website/users',
+          },
+        }),
+        pagination,
+        hasMore: true,
       });
     },
   );

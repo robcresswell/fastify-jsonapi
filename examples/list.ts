@@ -4,8 +4,11 @@ import {
   TypeBoxTypeProvider,
   TypeBoxValidatorCompiler,
 } from '@fastify/type-provider-typebox';
-import { jsonApiPlugin } from '../src/plugin';
-import { buildQuerySchema } from '../src/querystring';
+import {
+  jsonApiPlugin,
+  buildTypeboxQuerySchema,
+  parseQuery,
+} from '../src/index.js';
 
 export async function createTestServer() {
   const server = fastify()
@@ -14,7 +17,7 @@ export async function createTestServer() {
 
   await server.register(jsonApiPlugin);
 
-  const { querySchema } = buildQuerySchema({
+  const querySchema = buildTypeboxQuerySchema({
     sort: ['name'],
     filters: { name: Type.Optional(Type.String()) },
   });
@@ -23,26 +26,24 @@ export async function createTestServer() {
     '/',
     { schema: { querystring: querySchema } },
     async (req, reply) => {
-      const { pagination } = req.parseQuery<'name', 'name'>();
+      const { pagination } = parseQuery(req.query);
 
       return reply.list({
         items: [
           { id: '1', name: 'one', otherId: '123' },
           { id: '2', name: 'two', otherId: '456' },
         ],
-        itemMapper: ({ id, name, otherId }) => {
-          return {
-            type: 'foobar',
-            id,
-            attributes: { name },
-            relationships: {
-              other: {
-                type: 'others',
-                id: otherId,
-              },
+        itemMapper: ({ id, name, otherId }) => ({
+          type: 'foobar',
+          id,
+          attributes: { name },
+          relationships: {
+            other: {
+              type: 'others',
+              id: otherId,
             },
-          };
-        },
+          },
+        }),
         pagination,
         hasMore: true,
       });

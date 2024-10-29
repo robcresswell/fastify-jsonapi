@@ -1,6 +1,6 @@
 import { it, describe, beforeEach, afterEach, expect } from 'vitest';
 import { createTestServer, TestServer } from './helpers.js';
-import { encodePageCursor } from '../src/pagination/encoding.js';
+import { encodePageCursor } from '../src/encoding.js';
 
 describe('plugin', () => {
   let server: TestServer;

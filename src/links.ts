@@ -1,6 +1,6 @@
-import { Item } from '../types.js';
+import { Item } from './types.js';
 import { encodePageCursor } from './encoding.js';
-import { PaginationOpts } from './types.js';
+import { Pagination } from './types.js';
 
 /**
  * Convert a pointer, such as a specific date in an updatedAt field, into a
@@ -33,11 +33,9 @@ export function assembleLinks<T extends Item>(opts: {
   self: URL;
   items: T[];
   hasMore: boolean;
-  pagination: PaginationOpts<string>;
+  pagination: Pagination<string>;
 }): Record<string, string | null> {
   const { self, items, hasMore } = opts;
-  const { field, order } = opts.pagination;
-  const pageSize = opts.pagination.limit.toString();
 
   const links: Record<string, string | null> = {
     self: self.toString(),
@@ -48,6 +46,9 @@ export function assembleLinks<T extends Item>(opts: {
   if (items.length === 0) {
     return links;
   }
+
+  const { field, order } = opts.pagination;
+  const pageSize = opts.pagination.limit.toString();
 
   if (self.searchParams.has('page[after]')) {
     const item = items[0];

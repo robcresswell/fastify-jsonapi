@@ -4,7 +4,7 @@ set shell := ["sh", "-uc"]
     npm install
 
 @build:
-    ./node_modules/.bin/tsc
+    ./node_modules/.bin/tsc --project tsconfig.build.json
 
 @lint:
     ./node_modules/.bin/eslint src test scripts

@@ -6,7 +6,8 @@ import {
 } from '@fastify/type-provider-typebox';
 import { jsonApiPlugin } from '../src/plugin.js';
 import { IncomingMessage, Server, ServerResponse } from 'node:http';
-import { buildQuerySchema, parseQuery } from '../src/querystring.js';
+import { parseQuery } from '../src/querystring/parse.js';
+import { buildTypeboxQuerySchema } from '../src/querystring/typebox-schema.js';
 
 export type TestServer = FastifyInstance<
   Server,
@@ -68,7 +69,7 @@ export async function createTestServer() {
 
   await server.register(jsonApiPlugin);
 
-  const { querySchema } = buildQuerySchema({
+  const querySchema = buildTypeboxQuerySchema({
     sort: ['name', 'createdAt'] as const,
     filters: { name: Type.Optional(Type.String()) },
   });
@@ -81,7 +82,7 @@ export async function createTestServer() {
       },
     },
     async (req, reply) => {
-      const { pagination } = parseQuery(req.query, {});
+      const { pagination } = parseQuery(req.query);
       const { field, limit, order, pointer } = pagination;
       const { items, hasMore } = fakeDb(field, limit, order, pointer);
 

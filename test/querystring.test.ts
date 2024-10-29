@@ -1,220 +1,173 @@
-import { buildQuerySchema, Query } from '../src/querystring.js';
-import { Type } from '@fastify/type-provider-typebox';
-import { SupportedFilters } from '../src/filters.js';
+import { encodePageCursor } from '../src/encoding.js';
+import { parseQuery } from '../src/querystring/parse.js';
 import { describe, expect, it } from 'vitest';
 
-// describe('querystring', () => {
-//   const testCases: {
-//     name: string;
-//     args: { sort: string[]; filters: SupportedFilters<string> };
-//     query: Query<string, string>;
-//     expected: {
-//       filters: Record<
-//         string,
-//         {
-//           field: string;
-//           operator: string;
-//           value: unknown;
-//         }
-//       >;
-//       pagination: {
-//         field: string;
-//         limit: number;
-//         order: string;
-//         pointer?: string;
-//       };
-//     };
-//   }[] = [
-//     {
-//       name: 'sort only',
-//       args: {
-//         sort: ['updatedAt'],
-//         filters: {},
-//       },
-//       query: { sort: '-updatedAt' },
-//       expected: {
-//         filters: {},
-//         pagination: {
-//           field: 'updatedAt',
-//           limit: 1000,
-//           order: 'desc',
-//         },
-//       },
-//     },
+describe('querystring parser', () => {
+  it('returns db params for pagination', () => {
+    const querystring = {
+      sort: 'id',
+      'page[size]': 17,
+    };
 
-//     {
-//       name: 'no operator',
-//       args: {
-//         sort: ['age'],
-//         filters: { age: Type.Number() },
-//       },
-//       query: { sort: 'age', 'filter[age]': '40' },
-//       expected: {
-//         filters: {
-//           age: {
-//             field: 'age',
-//             operator: 'eq',
-//             value: 40,
-//           },
-//         },
-//         pagination: {
-//           field: 'age',
-//           limit: 1000,
-//           order: 'asc',
-//         },
-//       },
-//     },
+    const { pagination } = parseQuery(querystring);
 
-//     {
-//       name: 'lte',
-//       args: {
-//         sort: ['age'],
-//         filters: { age: Type.Number() },
-//       },
-//       query: { sort: 'age', 'filter[age]': 'lte(40)' },
-//       expected: {
-//         filters: {
-//           age: {
-//             field: 'age',
-//             operator: 'lte',
-//             value: 40,
-//           },
-//         },
-//         pagination: {
-//           field: 'age',
-//           limit: 1000,
-//           order: 'asc',
-//         },
-//       },
-//     },
+    expect(pagination).toEqual({
+      limit: 17,
+      field: 'id',
+      order: 'asc',
+    });
+  });
 
-//     {
-//       name: 'date schema',
-//       args: {
-//         sort: ['name'],
-//         filters: { createdAt: Type.Date() },
-//       },
-//       query: {
-//         sort: 'name',
-//         'filter[createdAt]': 'gt(2024-06-16T09:00:00.000Z)',
-//       },
-//       expected: {
-//         filters: {
-//           createdAt: {
-//             field: 'createdAt',
-//             operator: 'gt',
-//             value: new Date('2024-06-16T09:00:00.000Z'),
-//           },
-//         },
-//         pagination: {
-//           field: 'name',
-//           limit: 1000,
-//           order: 'asc',
-//         },
-//       },
-//     },
-//   ];
+  it('supports reversing the pagination order', () => {
+    const querystring = {
+      sort: '-id', // Note the "-" prefix
+      'page[size]': 17,
+    };
 
-//   testCases.forEach(({ name, args, query, expected }) => {
-//     it(name, () => {
-//       const { queryValidator } = buildQuerySchema(args);
+    const { pagination } = parseQuery(querystring);
 
-//       const validated = queryValidator(query);
+    expect(pagination).toEqual({
+      limit: 17,
+      field: 'id',
+      order: 'desc',
+    });
+  });
 
-//       expect(validated).toEqual(expected);
-//     });
-//   });
-// });
+  it('does not support range pagination', () => {
+    const querystring = {
+      sort: 'name',
+      'page[before]': '654321',
+      'page[after]': '123456',
+    };
 
-// describe('querystring parser', () => {
-//   it('returns db params for pagination', () => {
-//     const querystring = {
-//       sort: 'id',
-//       'page[size]': 17,
-//     };
+    expect(() => parseQuery(querystring)).toThrow();
+  });
 
-//     const { pagination } = parseQuery(querystring);
+  it('converts a cursor into pagination params (desc)', () => {
+    const id = '123456';
+    const cursor = encodePageCursor({
+      field: 'id',
+      order: 'desc',
+      pointer: id,
+    });
+    const querystring = {
+      sort: 'name',
+      'page[after]': cursor,
+    };
+    const { pagination } = parseQuery(querystring);
 
-//     assert.deepEqual(pagination, {
-//       limit: 17,
-//       column: 'id',
-//       order: 'asc',
-//     });
-//   });
+    expect(pagination).toEqual({
+      limit: 1000,
+      field: 'id',
+      order: 'desc',
+      pointer: id,
+    });
+  });
 
-//   it('supports reversing the pagination order', () => {
-//     const querystring = {
-//       sort: '-id', // Note the "-" prefix
-//       'page[size]': 17,
-//     };
+  it('converts a cursor into pagination params (asc)', () => {
+    const name = 'foobar';
+    const cursor = encodePageCursor({
+      field: 'name',
+      order: 'asc',
+      pointer: name,
+    });
+    const querystring = {
+      sort: 'name',
+      'page[after]': cursor,
+    };
+    const { pagination } = parseQuery(querystring);
 
-//     const { pagination } = parseQuery(querystring);
+    expect(pagination).toEqual({
+      limit: 1000,
+      field: 'name',
+      order: 'asc',
+      pointer: name,
+    });
+  });
 
-//     assert.deepEqual(pagination, {
-//       limit: 17,
-//       column: 'id',
-//       order: 'desc',
-//     });
-//   });
+  it('handles paging backawards', () => {
+    const name = 'foobar';
+    const cursor = encodePageCursor({
+      field: 'name',
+      order: 'asc',
+      pointer: name,
+    });
+    const querystring = {
+      sort: 'name',
+      'page[before]': cursor,
+    };
+    const { pagination } = parseQuery(querystring);
 
-//   it('does not support range pagination', () => {
-//     const querystring = {
-//       sort: 'name',
-//       'page[before]': '654321',
-//       'page[after]': '123456',
-//     };
+    expect(pagination).toEqual({
+      limit: 1000,
+      field: 'name',
+      order: 'asc',
+      pointer: name,
+    });
+  });
 
-//     assert.throws(() => parseQuery(querystring));
-//   });
+  describe('parses filters', () => {
+    const cases: [
+      filters: Record<string, string | number>,
+      expected: Record<
+        string,
+        { field: string; operator: string; value: unknown }
+      >,
+    ][] = [
+      [
+        { 'filter[name]': 'bar' },
+        { name: { field: 'name', operator: 'eq', value: 'bar' } },
+      ],
+      [
+        { 'filter[id][gt]': 1 },
+        {
+          id: { field: 'id', operator: 'gt', value: 1 },
+        },
+      ],
+      [
+        { 'filter[date][lte]': '2022-02-22T02:00:00.000Z' },
+        {
+          date: {
+            field: 'date',
+            operator: 'lte',
+            value: '2022-02-22T02:00:00.000Z',
+          },
+        },
+      ],
+      [{ 'filter[]': 'foo' }, {}],
+    ];
 
-//   it('converts a cursor into pagination params (desc)', () => {
-//     const id = '123456';
-//     const cursor = b64Encode(`-id__${id}`);
-//     const querystring = {
-//       sort: 'name',
-//       'page[after]': cursor,
-//     };
-//     const { pagination } = parseQuery(querystring);
+    cases.forEach(([filters, expected]) => {
+      it(JSON.stringify(filters), () => {
+        const parsed = parseQuery({
+          sort: 'id',
+          ...filters,
+        });
 
-//     assert.deepEqual(pagination, {
-//       limit: 1000,
-//       column: 'id',
-//       order: 'desc',
-//       pointer: id,
-//     });
-//   });
+        expect(parsed.filters).toEqual(expected);
+      });
+    });
+  });
 
-//   it('converts a cursor into pagination params (asc)', () => {
-//     const name = 'foobar';
-//     const cursor = b64Encode(`name__${name}`);
-//     const querystring = {
-//       sort: 'name',
-//       'page[after]': cursor,
-//     };
-//     const { pagination } = parseQuery(querystring);
+  describe('throws on invalid filters', () => {
+    const cases: [filters: Record<string, string>, message: Error][] = [
+      [
+        { 'filter[name][bar]': '5' },
+        new Error(
+          "Invalid operator 'bar' in filter[name][bar]=5. Operators must be one of 'eq', 'gte', 'gt', 'lt', 'lte', 'ne'",
+        ),
+      ],
+    ];
 
-//     assert.deepEqual(pagination, {
-//       limit: 1000,
-//       column: 'name',
-//       order: 'asc',
-//       pointer: name,
-//     });
-//   });
-
-//   it('handles paging backawards', () => {
-//     const name = 'foobar';
-//     const cursor = b64Encode(`name__${name}`);
-//     const querystring = {
-//       sort: 'name',
-//       'page[before]': cursor,
-//     };
-//     const { pagination } = parseQuery(querystring);
-
-//     assert.deepEqual(pagination, {
-//       limit: 1000,
-//       column: 'name',
-//       order: 'asc',
-//       pointer: name,
-//     });
-//   });
-// });
+    cases.forEach(([filters, expected]) => {
+      it(JSON.stringify(filters), () => {
+        expect(() =>
+          parseQuery({
+            sort: 'id',
+            ...filters,
+          }),
+        ).toThrowError(expected);
+      });
+    });
+  });
+});

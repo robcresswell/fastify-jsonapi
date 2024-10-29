@@ -1,5 +1,7 @@
 # Examples
 
+See the [JSON:API website](https://jsonapi.org/) for detailed examples on the spec itself
+
 ## List With Filter
 
 ```ts
@@ -9,8 +11,11 @@ import {
   TypeBoxTypeProvider,
   TypeBoxValidatorCompiler,
 } from '@fastify/type-provider-typebox';
-import { jsonApiPlugin } from '../src/plugin';
-import { buildQuerySchema } from '../src/querystring';
+import {
+  jsonApiPlugin,
+  buildTypeboxQuerySchema,
+  parseQuery,
+} from '@robcresswell/fastify-jsonapi';
 
 export async function createTestServer() {
   const server = fastify()
@@ -19,7 +24,7 @@ export async function createTestServer() {
 
   await server.register(jsonApiPlugin);
 
-  const { querySchema, queryValidator } = buildQuerySchema({
+  const querySchema = buildTypeboxQuerySchema({
     sort: [],
     filters: { teamId: Type.String() },
   });
@@ -28,7 +33,7 @@ export async function createTestServer() {
     '/users',
     { schema: { querystring: querySchema } },
     async (req, reply) => {
-      const { filters } = queryValidator(req.query);
+      const { pagination, filters } = parseQuery(req.query);
 
       const users = getUsers();
 
@@ -37,14 +42,28 @@ export async function createTestServer() {
       );
 
       return reply.list({
-        type: 'users',
-        items: items,
-        relationshipBuilder: ({ teamId }) => {
-          return { team: `https://my-website/teams/${teamId}` };
-        },
-        links: {
-          self: 'https://my-website/users',
-        },
+        items,
+        itemMapper: ({ id, teamId }) => ({
+          type: 'users',
+          id,
+          attributes: {},
+          relationships: {
+            team: {
+              links: {
+                self: `https://my-website/teams/${teamId}`,
+              },
+              data: {
+                type: 'teams',
+                id: teamId,
+              },
+            },
+          },
+          links: {
+            self: 'https://my-website/users',
+          },
+        }),
+        pagination,
+        hasMore: true,
       });
     },
   );
@@ -67,7 +86,6 @@ function getUsers() {
 
   return users;
 }
-
 ```
 
 ## List
@@ -79,8 +97,11 @@ import {
   TypeBoxTypeProvider,
   TypeBoxValidatorCompiler,
 } from '@fastify/type-provider-typebox';
-import { jsonApiPlugin } from '../src/plugin';
-import { buildQuerySchema } from '../src/querystring';
+import {
+  jsonApiPlugin,
+  buildTypeboxQuerySchema,
+  parseQuery,
+} from '@robcresswell/fastify-jsonapi';
 
 export async function createTestServer() {
   const server = fastify()
@@ -89,7 +110,7 @@ export async function createTestServer() {
 
   await server.register(jsonApiPlugin);
 
-  const { querySchema } = buildQuerySchema({
+  const querySchema = buildTypeboxQuerySchema({
     sort: ['name'],
     filters: { name: Type.Optional(Type.String()) },
   });
@@ -98,26 +119,24 @@ export async function createTestServer() {
     '/',
     { schema: { querystring: querySchema } },
     async (req, reply) => {
-      const { pagination } = req.parseQuery<'name', 'name'>();
+      const { pagination } = parseQuery(req.query);
 
       return reply.list({
         items: [
           { id: '1', name: 'one', otherId: '123' },
           { id: '2', name: 'two', otherId: '456' },
         ],
-        itemMapper: ({ id, name, otherId }) => {
-          return {
-            type: 'foobar',
-            id,
-            attributes: { name },
-            relationships: {
-              other: {
-                type: 'others',
-                id: otherId,
-              },
+        itemMapper: ({ id, name, otherId }) => ({
+          type: 'foobar',
+          id,
+          attributes: { name },
+          relationships: {
+            other: {
+              type: 'others',
+              id: otherId,
             },
-          };
-        },
+          },
+        }),
         pagination,
         hasMore: true,
       });
@@ -126,5 +145,4 @@ export async function createTestServer() {
 
   return server;
 }
-
 ```
