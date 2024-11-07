@@ -48,7 +48,7 @@ describe('querystring parser', () => {
     const cursor = encodePageCursor({
       field: 'id',
       order: 'desc',
-      pointer: id,
+      val: id,
     });
     const querystring = {
       sort: 'name',
@@ -60,7 +60,7 @@ describe('querystring parser', () => {
       limit: 1000,
       field: 'id',
       order: 'desc',
-      pointer: id,
+      val: id,
     });
   });
 
@@ -69,7 +69,7 @@ describe('querystring parser', () => {
     const cursor = encodePageCursor({
       field: 'name',
       order: 'asc',
-      pointer: name,
+      val: name,
     });
     const querystring = {
       sort: 'name',
@@ -81,7 +81,7 @@ describe('querystring parser', () => {
       limit: 1000,
       field: 'name',
       order: 'asc',
-      pointer: name,
+      val: name,
     });
   });
 
@@ -90,7 +90,7 @@ describe('querystring parser', () => {
     const cursor = encodePageCursor({
       field: 'name',
       order: 'asc',
-      pointer: name,
+      val: name,
     });
     const querystring = {
       sort: 'name',
@@ -102,7 +102,7 @@ describe('querystring parser', () => {
       limit: 1000,
       field: 'name',
       order: 'asc',
-      pointer: name,
+      val: name,
     });
   });
 

@@ -5,7 +5,7 @@ describe('encoding', () => {
   it('encodes a cursor', () => {
     const toEncode = {
       field: 'name',
-      pointer: 'three',
+      val: 'three',
       order: 'asc' as const,
     };
 
@@ -17,7 +17,7 @@ describe('encoding', () => {
 
     expect(decodePageCursor(toDecode)).toEqual({
       field: 'name',
-      pointer: 'three',
+      val: 'three',
       order: 'asc',
     });
   });
@@ -25,7 +25,7 @@ describe('encoding', () => {
   it('encodes and decodes to an identical value', () => {
     const toEncode = {
       field: 'name',
-      pointer: 'three',
+      val: 'three',
       order: 'asc' as const,
     };
 

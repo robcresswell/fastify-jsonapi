@@ -2,33 +2,6 @@ import { Item } from './types.js';
 import { encodePageCursor } from './encoding.js';
 import { Pagination } from './types.js';
 
-/**
- * Convert a pointer, such as a specific date in an updatedAt field, into a
- * string to be encoded as part of a pagination cursor
- */
-function stringifyPointer(pointer: unknown) {
-  // there's a better word than pointer for this, but my brain is failing me
-  if (pointer === null || pointer === undefined) {
-    throw new Error('unexpected null or undefined field in pagination pointer');
-  }
-
-  if (typeof pointer === 'string') {
-    return pointer;
-  }
-
-  if (pointer instanceof Date) {
-    return pointer.toISOString();
-  }
-
-  if (typeof pointer === 'number') {
-    return String(pointer);
-  }
-
-  throw new Error(
-    `unexpected field type: ${typeof pointer} in pagination pointer`,
-  );
-}
-
 export function assembleLinks<T extends Item>(opts: {
   self: URL;
   items: T[];
@@ -47,8 +20,8 @@ export function assembleLinks<T extends Item>(opts: {
     return links;
   }
 
-  const { field, order } = opts.pagination;
-  const pageSize = opts.pagination.limit.toString();
+  const { field, order, limit } = opts.pagination;
+  const pageSize = limit.toString();
 
   if (self.searchParams.has('page[after]')) {
     const item = items[0];
@@ -60,7 +33,7 @@ export function assembleLinks<T extends Item>(opts: {
         'page[before]',
         encodePageCursor({
           field,
-          pointer: stringifyPointer(item[field]),
+          val: item[field],
           order,
         }),
       );
@@ -78,7 +51,7 @@ export function assembleLinks<T extends Item>(opts: {
         'page[after]',
         encodePageCursor({
           field,
-          pointer: stringifyPointer(lastItem[field]),
+          val: lastItem[field],
           order,
         }),
       );

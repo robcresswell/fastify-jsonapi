@@ -48,14 +48,14 @@ export function parseQuery<TSort extends string, TFilter extends string>(
   // If we have a cursor, then we ignore any sort instructions and continue
   // paging with the cursor information
   if (cursor) {
-    const { field, pointer, order } = decodePageCursor(cursor);
+    const { field, val, order } = decodePageCursor(cursor);
 
     return {
       pagination: {
         limit,
         field: field as RemovePrefix<TSort>,
         order,
-        pointer,
+        val,
       },
       filters: {} as Filters<TFilter>,
     };

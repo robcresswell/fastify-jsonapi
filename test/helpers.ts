@@ -21,20 +21,32 @@ const data = [
   {
     id: '1',
     name: 'one',
-    createdAt: new Date('2024-10-10T01:00:00'),
+    createdAt: new Date('2024-01-01T01:00:00'),
     otherId: '123',
   },
   {
     id: '2',
     name: 'two',
-    createdAt: new Date('2024-11-11T02:00:00'),
+    createdAt: new Date('2024-02-02T02:00:00'),
     otherId: '456',
   },
   {
     id: '3',
     name: 'three',
-    createdAt: new Date('2024-12-12T03:00:00'),
+    createdAt: new Date('2024-03-03T03:00:00'),
     otherId: '789',
+  },
+  {
+    id: '4',
+    name: 'four',
+    createdAt: new Date('2024-04-04T04:00:00'),
+    otherId: '123',
+  },
+  {
+    id: '5',
+    name: 'five',
+    createdAt: new Date('2024-05-05T05:00:00'),
+    otherId: '456',
   },
 ];
 
@@ -42,18 +54,17 @@ function fakeDb(
   field: 'name' | 'createdAt',
   limit: number,
   order: 'asc' | 'desc',
-  pointer?: string,
+  val?: string,
 ) {
-  const sorted = data.sort((a, b) => {
-    const sortVal = a[field] > b[field] ? 1 : -1;
-    return order === 'asc' ? sortVal : sortVal * -1;
-  });
+  const sorted = data.sort((a, b) => (a[field] > b[field] ? 1 : -1));
 
-  if (!pointer) {
+  if (order === 'desc') sorted.reverse();
+
+  if (!val) {
     return { items: sorted.slice(0, limit), hasMore: data.length > limit };
   }
 
-  const startFrom = sorted.findIndex((item) => item[field] === pointer) + 1;
+  const startFrom = sorted.findIndex((item) => item[field] === val) + 1;
   const paged = sorted.slice(startFrom);
 
   return {
@@ -83,8 +94,8 @@ export async function createTestServer() {
     },
     async (req, reply) => {
       const { pagination } = parseQuery(req.query);
-      const { field, limit, order, pointer } = pagination;
-      const { items, hasMore } = fakeDb(field, limit, order, pointer);
+      const { field, limit, order, val } = pagination;
+      const { items, hasMore } = fakeDb(field, limit, order, val);
 
       reply.list({
         items,
@@ -107,7 +118,11 @@ export async function createTestServer() {
     reply.list({
       items: [],
       itemMapper: () => {
-        return { type: 'item', id: '1', attributes: {} };
+        return {
+          type: 'item',
+          id: '1',
+          attributes: {},
+        };
       },
       hasMore: false,
       pagination: { field: 'name', limit: 10, order: 'asc' },

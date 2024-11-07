@@ -55,7 +55,7 @@ describe('plugin', () => {
         method: 'GET',
         query: {
           sort: 'name',
-          'page[size]': '10',
+          'page[size]': '5',
         },
       });
 
@@ -69,10 +69,28 @@ describe('plugin', () => {
         data: [
           {
             type: 'item',
+            id: '5',
+            attributes: {
+              name: 'five',
+              createdAt: '2024-05-05T04:00:00.000Z',
+              otherId: '456',
+            },
+          },
+          {
+            type: 'item',
+            id: '4',
+            attributes: {
+              name: 'four',
+              createdAt: '2024-04-04T03:00:00.000Z',
+              otherId: '123',
+            },
+          },
+          {
+            type: 'item',
             id: '1',
             attributes: {
               name: 'one',
-              createdAt: '2024-10-10T00:00:00.000Z',
+              createdAt: '2024-01-01T01:00:00.000Z',
               otherId: '123',
             },
           },
@@ -81,7 +99,7 @@ describe('plugin', () => {
             id: '3',
             attributes: {
               name: 'three',
-              createdAt: '2024-12-12T03:00:00.000Z',
+              createdAt: '2024-03-03T03:00:00.000Z',
               otherId: '789',
             },
           },
@@ -90,13 +108,13 @@ describe('plugin', () => {
             id: '2',
             attributes: {
               name: 'two',
-              createdAt: '2024-11-11T02:00:00.000Z',
+              createdAt: '2024-02-02T02:00:00.000Z',
               otherId: '456',
             },
           },
         ],
         links: {
-          self: 'http://localhost/items?sort=name&page%5Bsize%5D=10',
+          self: 'http://localhost/items?sort=name&page%5Bsize%5D=5',
           prev: null,
           next: null,
         },
@@ -127,7 +145,7 @@ describe('plugin', () => {
               id: '1',
               attributes: {
                 name: 'one',
-                createdAt: '2024-10-10T00:00:00.000Z',
+                createdAt: '2024-01-01T01:00:00.000Z',
                 otherId: '123',
               },
             },
@@ -136,7 +154,7 @@ describe('plugin', () => {
               id: '2',
               attributes: {
                 name: 'two',
-                createdAt: '2024-11-11T02:00:00.000Z',
+                createdAt: '2024-02-02T02:00:00.000Z',
                 otherId: '456',
               },
             },
@@ -144,7 +162,7 @@ describe('plugin', () => {
           links: {
             self: 'http://localhost/items?sort=createdAt&page%5Bsize%5D=2',
             prev: null,
-            next: 'http://localhost/items?sort=createdAt&page%5Bsize%5D=2&page%5Bafter%5D=Y3JlYXRlZEF0X18yMDI0LTExLTExVDAyOjAwOjAwLjAwMFo%3D',
+            next: 'http://localhost/items?sort=createdAt&page%5Bsize%5D=2&page%5Bafter%5D=Y3JlYXRlZEF0X18yMDI0LTAyLTAyVDAyOjAwOjAwLjAwMFo%3D',
           },
         });
       });
@@ -158,7 +176,7 @@ describe('plugin', () => {
             'page[size]': '2',
             'page[after]': encodePageCursor({
               field: 'name',
-              pointer: 'one',
+              val: 'one',
               order: 'asc',
             }),
           },
@@ -177,7 +195,7 @@ describe('plugin', () => {
               id: '3',
               attributes: {
                 name: 'three',
-                createdAt: '2024-12-12T03:00:00.000Z',
+                createdAt: '2024-03-03T03:00:00.000Z',
                 otherId: '789',
               },
             },
@@ -186,7 +204,7 @@ describe('plugin', () => {
               id: '2',
               attributes: {
                 name: 'two',
-                createdAt: '2024-11-11T02:00:00.000Z',
+                createdAt: '2024-02-02T02:00:00.000Z',
                 otherId: '456',
               },
             },
@@ -208,7 +226,7 @@ describe('plugin', () => {
             'page[size]': '1',
             'page[after]': encodePageCursor({
               field: 'name',
-              pointer: 'one',
+              val: 'one',
               order: 'asc',
             }),
           },
@@ -227,7 +245,7 @@ describe('plugin', () => {
               id: '3',
               attributes: {
                 name: 'three',
-                createdAt: '2024-12-12T03:00:00.000Z',
+                createdAt: '2024-03-03T03:00:00.000Z',
                 otherId: '789',
               },
             },
@@ -272,7 +290,7 @@ describe('plugin', () => {
           method: 'GET',
           query: {
             sort: 'name',
-            'page[size]': '3',
+            'page[size]': '12',
           },
         });
 
@@ -286,10 +304,28 @@ describe('plugin', () => {
           data: [
             {
               type: 'item',
+              id: '5',
+              attributes: {
+                name: 'five',
+                createdAt: '2024-05-05T04:00:00.000Z',
+                otherId: '456',
+              },
+            },
+            {
+              type: 'item',
+              id: '4',
+              attributes: {
+                name: 'four',
+                createdAt: '2024-04-04T03:00:00.000Z',
+                otherId: '123',
+              },
+            },
+            {
+              type: 'item',
               id: '1',
               attributes: {
                 name: 'one',
-                createdAt: '2024-10-10T00:00:00.000Z',
+                createdAt: '2024-01-01T01:00:00.000Z',
                 otherId: '123',
               },
             },
@@ -298,7 +334,7 @@ describe('plugin', () => {
               id: '3',
               attributes: {
                 name: 'three',
-                createdAt: '2024-12-12T03:00:00.000Z',
+                createdAt: '2024-03-03T03:00:00.000Z',
                 otherId: '789',
               },
             },
@@ -307,13 +343,13 @@ describe('plugin', () => {
               id: '2',
               attributes: {
                 name: 'two',
-                createdAt: '2024-11-11T02:00:00.000Z',
+                createdAt: '2024-02-02T02:00:00.000Z',
                 otherId: '456',
               },
             },
           ],
           links: {
-            self: 'http://localhost/items?sort=name&page%5Bsize%5D=3',
+            self: 'http://localhost/items?sort=name&page%5Bsize%5D=12',
             prev: null,
             next: null,
           },
