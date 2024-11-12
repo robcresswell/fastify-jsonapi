@@ -31,4 +31,4 @@ compliant APIs with [Fastify](https://fastify.dev/) and
 
 ## Examples
 
-See [EXAMPLES.md](./examples/EXAMPLES.md)
+See [EXAMPLES.md](./EXAMPLES.md)

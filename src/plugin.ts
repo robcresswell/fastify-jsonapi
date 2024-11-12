@@ -36,17 +36,22 @@ async function jsonApiListResponse<T extends Item>(
   this: FastifyReply,
   opts: {
     items: T[];
-    itemMapper: (arg0: T) => Data;
+    itemMapper: (value: T, index: number, array: T[]) => Data;
     hasMore: boolean;
     pagination: Pagination<string>;
+    meta?: Record<string, unknown>;
   },
 ) {
-  const { items, itemMapper, hasMore, pagination } = opts;
+  const { items, itemMapper, hasMore, pagination, meta = {} } = opts;
   const self = new URL(
     `${this.request.protocol}://${this.request.host}${this.request.url}`,
   );
   const links = assembleLinks({ self, items, hasMore, pagination });
   const data = items.map(itemMapper);
+
+  if (!('count' in meta)) {
+    meta.count = data.length;
+  }
 
   return this.header('Content-Type', CONTENT_TYPE).send({
     jsonapi: {
@@ -55,6 +60,7 @@ async function jsonApiListResponse<T extends Item>(
     },
     data,
     links,
+    meta,
   });
 }
 

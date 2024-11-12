@@ -15,17 +15,16 @@ async function main() {
     '# Examples',
     'See the [JSON:API website](https://jsonapi.org/) for detailed examples on the spec itself',
   ];
+
   for (const { parentPath, name } of exampleFiles) {
     if (!name.endsWith('.ts')) continue;
 
-    const fileContents = await readFile(join(parentPath, name), {
-      encoding: 'utf-8',
-    });
+    const fileContents = await readFile(join(parentPath, name), 'utf-8');
     const title = name.slice(0, -3).split('-').map(capitalise).join(' ');
 
-    exampleMdContentArr.push(`## ${title}`);
+    exampleMdContentArr.push(`## ${title}\n`);
     exampleMdContentArr.push(
-      `\`\`\`ts\n${fileContents.replace(
+      `\`\`\`ts${fileContents.replace(
         '../src/index.js',
         '@robcresswell/fastify-jsonapi',
       )}\n\`\`\``,

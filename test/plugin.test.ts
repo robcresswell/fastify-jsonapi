@@ -118,6 +118,7 @@ describe('plugin', () => {
           prev: null,
           next: null,
         },
+        meta: { count: 5 },
       });
     });
 
@@ -164,6 +165,7 @@ describe('plugin', () => {
             prev: null,
             next: 'http://localhost/items?sort=createdAt&page%5Bsize%5D=2&page%5Bafter%5D=Y3JlYXRlZEF0X18yMDI0LTAyLTAyVDAyOjAwOjAwLjAwMFo%3D',
           },
+          meta: { count: 2 },
         });
       });
 
@@ -214,6 +216,7 @@ describe('plugin', () => {
             self: 'http://localhost/items?sort=name&page%5Bsize%5D=2&page%5Bafter%5D=bmFtZV9fb25l',
             next: null,
           },
+          meta: { count: 2 },
         });
       });
 
@@ -255,6 +258,7 @@ describe('plugin', () => {
             prev: 'http://localhost/items?sort=name&page%5Bsize%5D=1&page%5Bbefore%5D=bmFtZV9fdGhyZWU%3D',
             next: 'http://localhost/items?sort=name&page%5Bsize%5D=1&page%5Bafter%5D=bmFtZV9fdGhyZWU%3D',
           },
+          meta: { count: 1 },
         });
       });
 
@@ -281,6 +285,7 @@ describe('plugin', () => {
             prev: null,
             next: null,
           },
+          meta: { count: 0 },
         });
       });
 
@@ -353,6 +358,7 @@ describe('plugin', () => {
             prev: null,
             next: null,
           },
+          meta: { count: 5 },
         });
       });
     });
