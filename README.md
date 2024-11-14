@@ -1,8 +1,7 @@
 # @robcresswell/fastify-jsonapi
 
 A collection of functions to help you build [JSON:API](https://jsonapi.org/)
-compliant APIs with [Fastify](https://fastify.dev/) and
-[TypeBox](https://github.com/sinclairzx81/typebox)
+compliant APIs with [Fastify](https://fastify.dev/)
 
 ## Getting Started
 
@@ -16,16 +15,9 @@ compliant APIs with [Fastify](https://fastify.dev/) and
 
    ```ts
    import { fastify } from 'fastify';
-   import {
-     TypeBoxTypeProvider,
-     TypeBoxValidatorCompiler,
-   } from '@fastify/type-provider-typebox';
-   import { jsonApiPlugin } from '@robcresswell/@robcresswell/fastify-jsonapi';
+   import { jsonApiPlugin } from '@robcresswell/fastify-jsonapi';
 
-   const app = fastify()
-     .withTypeProvider<TypeBoxTypeProvider>()
-     .setValidatorCompiler(TypeBoxValidatorCompiler);
-
+   const app = fastify();
    await app.register(jsonApiPlugin);
    ```
 

@@ -1,3 +1,5 @@
+import { InvalidPaginationCursorError } from './errors.js';
+
 const PAGE_CURSOR_SEPARATOR = '__';
 
 export function encodePageCursor({
@@ -28,7 +30,7 @@ export function decodePageCursor(cursor: string): {
   const [fieldNameWithOrder, val] = str.split(PAGE_CURSOR_SEPARATOR);
 
   if (!fieldNameWithOrder || !val) {
-    throw new Error('Invalid cursor');
+    throw new InvalidPaginationCursorError(cursor);
   }
 
   return fieldNameWithOrder.startsWith('-')

@@ -1,9 +1,20 @@
 import { operators } from './querystring/filter.js';
 
-export class RangePaginationNotSupportedError extends Error {
+export class HttpError extends Error {
+  public statusCode: number;
+
+  constructor(statusCode?: number, message?: string) {
+    super(message ?? 'Internal Server Error');
+
+    this.statusCode = statusCode ?? 500;
+  }
+}
+
+export class RangePaginationNotSupportedError extends HttpError {
   constructor() {
     super(
-      'Range pagination is not supported. Please supply either a "before" or "after" cursor',
+      400,
+      "Range pagination is not supported. Please supply either a 'before' or 'after' cursor",
     );
 
     Error.captureStackTrace(this, RangePaginationNotSupportedError);
@@ -12,16 +23,26 @@ export class RangePaginationNotSupportedError extends Error {
   }
 }
 
-export class InvalidFilterOperatorError extends Error {
+export class InvalidFilterOperatorError extends HttpError {
   constructor(operator: string, queryKey: string, queryVal: string | number) {
     const message = `Invalid operator '${operator}' in ${queryKey}=${String(
       queryVal,
     )}. Operators must be one of '${operators.join("', '")}'`;
 
-    super(message);
+    super(400, message);
 
     Error.captureStackTrace(this, InvalidFilterOperatorError);
 
     this.name = 'InvalidFilterOperatorError';
+  }
+}
+
+export class InvalidPaginationCursorError extends HttpError {
+  constructor(cursor: string) {
+    super(400, `Invalid pagination cursor: '${cursor}'`);
+
+    Error.captureStackTrace(this, InvalidPaginationCursorError);
+
+    this.name = 'InvalidPaginationCursorError';
   }
 }

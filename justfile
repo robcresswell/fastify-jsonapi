@@ -1,5 +1,8 @@
 set shell := ["sh", "-uc"]
 
+@test:
+    ./node_modules/.bin/vitest
+
 @install:
     npm install
 
@@ -9,7 +12,8 @@ set shell := ["sh", "-uc"]
 @lint:
     ./node_modules/.bin/eslint src test scripts
 
-@test:
-    ./node_modules/.bin/vitest
+@publish: build
+    npm run publish
 
-# @coverage:
+@coverage:
+    ./node_modules/.bin/vitest run --coverage ; open reports/coverage/index.html

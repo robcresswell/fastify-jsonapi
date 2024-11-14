@@ -78,7 +78,10 @@ export async function createTestServer() {
     .withTypeProvider<TypeBoxTypeProvider>()
     .setValidatorCompiler(TypeBoxValidatorCompiler);
 
-  await server.register(jsonApiPlugin);
+  await server.register(jsonApiPlugin, {
+    setNotFoundHandler: true,
+    setErrorHandler: true,
+  });
 
   const querySchema = buildTypeboxQuerySchema({
     sort: ['name', 'createdAt'] as const,
@@ -97,7 +100,7 @@ export async function createTestServer() {
       const { field, limit, order, val } = pagination;
       const { items, hasMore } = fakeDb(field, limit, order, val);
 
-      reply.list({
+      return reply.list({
         items,
         itemMapper: (item) => ({
           type: 'item',
@@ -115,7 +118,7 @@ export async function createTestServer() {
   );
 
   server.get('/empty', async (_req, reply) => {
-    reply.list({
+    return reply.list({
       items: [],
       itemMapper: () => {
         return {
@@ -123,6 +126,17 @@ export async function createTestServer() {
           id: '1',
           attributes: {},
         };
+      },
+      hasMore: false,
+      pagination: { field: 'name', limit: 10, order: 'asc' },
+    });
+  });
+
+  server.get('/throws-error', async (_req, reply) => {
+    return reply.list({
+      items: [{ id: '123-456-789' }],
+      itemMapper: () => {
+        throw new Error();
       },
       hasMore: false,
       pagination: { field: 'name', limit: 10, order: 'asc' },

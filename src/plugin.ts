@@ -1,17 +1,15 @@
-import { STATUS_CODES } from 'node:http';
 import type { FastifyPluginAsync, FastifyReply } from 'fastify';
 import fastifyPlugin from 'fastify-plugin';
 import { Pagination, type Item } from './types.js';
 import { assembleLinks } from './links.js';
 import { parseQuery } from './querystring/parse.js';
-
-const CONTENT_TYPE =
-  'application/vnd.api+json; profile="https://jsonapi.org/profiles/ethanresnick/cursor-pagination"';
-
-const PAGINATION_PROFILE =
-  'https://jsonapi.org/profiles/ethanresnick/cursor-pagination';
-
-const JSONAPI_VERSION = '1.1';
+import {
+  CONTENT_TYPE,
+  JSONAPI_VERSION,
+  PAGINATION_PROFILE,
+} from './constants.js';
+import { errResponse } from './error-response.js';
+import { HttpError } from './errors.js';
 
 declare module 'fastify' {
   export interface FastifyRequest {
@@ -42,26 +40,34 @@ async function jsonApiListResponse<T extends Item>(
     meta?: Record<string, unknown>;
   },
 ) {
-  const { items, itemMapper, hasMore, pagination, meta = {} } = opts;
-  const self = new URL(
-    `${this.request.protocol}://${this.request.host}${this.request.url}`,
-  );
-  const links = assembleLinks({ self, items, hasMore, pagination });
-  const data = items.map(itemMapper);
+  try {
+    const { items, itemMapper, hasMore, pagination, meta = {} } = opts;
+    const self = new URL(
+      `${this.request.protocol}://${this.request.host}${this.request.url}`,
+    );
+    const links = assembleLinks({ self, items, hasMore, pagination });
+    const data = items.map(itemMapper);
 
-  if (!('count' in meta)) {
-    meta.count = data.length;
+    if (!('count' in meta)) {
+      meta.count = data.length;
+    }
+
+    return await this.header('Content-Type', CONTENT_TYPE).send({
+      jsonapi: {
+        version: JSONAPI_VERSION,
+        profile: [PAGINATION_PROFILE],
+      },
+      data,
+      links,
+      meta,
+    });
+  } catch (err: unknown) {
+    return errResponse(
+      err instanceof HttpError
+        ? err
+        : { statusCode: 500, message: 'Internal Server Error' },
+    );
   }
-
-  return this.header('Content-Type', CONTENT_TYPE).send({
-    jsonapi: {
-      version: JSONAPI_VERSION,
-      profile: [PAGINATION_PROFILE],
-    },
-    data,
-    links,
-    meta,
-  });
 }
 
 async function jsonApiObjResponse(
@@ -74,43 +80,35 @@ async function jsonApiObjResponse(
     links?: Record<string, string | null>;
   },
 ) {
-  const { type, item, relationships, links = {} } = opts;
-  const { id, ...attributes } = item;
+  try {
+    const { type, item, relationships, links = {} } = opts;
+    const { id, ...attributes } = item;
 
-  const self = new URL(
-    `${this.request.protocol}://${this.request.host}${this.request.url}`,
-  );
-  links.self = self.toString();
+    const self = new URL(
+      `${this.request.protocol}://${this.request.host}${this.request.url}`,
+    );
+    links.self = self.toString();
 
-  return this.header('Content-Type', CONTENT_TYPE).send({
-    jsonapi: {
-      version: JSONAPI_VERSION,
-      profile: [PAGINATION_PROFILE],
-    },
-    data: {
-      type,
-      id,
-      attributes,
-      relationships,
-    },
-    links,
-  });
-}
-
-function errResponse(err: { statusCode?: number | string; message?: string }) {
-  const status = err.statusCode?.toString() ?? 500;
-  const title = STATUS_CODES[status] ?? 'Unknown Error';
-
-  return {
-    jsonapi: { version: JSONAPI_VERSION },
-    errors: [
-      {
-        status,
-        title,
-        detail: err.message ?? title,
+    return await this.header('Content-Type', CONTENT_TYPE).send({
+      jsonapi: {
+        version: JSONAPI_VERSION,
+        profile: [PAGINATION_PROFILE],
       },
-    ],
-  };
+      data: {
+        type,
+        id,
+        attributes,
+        relationships,
+      },
+      links,
+    });
+  } catch (err: unknown) {
+    return errResponse(
+      err instanceof HttpError
+        ? err
+        : { statusCode: 500, message: 'Internal Server Error' },
+    );
+  }
 }
 
 const _jsonApiPlugin: FastifyPluginAsync<{

@@ -32,12 +32,14 @@ export function buildTypeboxQuerySchema<
   TFilter extends string,
 >(opts: { sort: TSort; filters: Record<TFilter, TSchema> }) {
   const querySchema = Type.Object({
-    sort: Type.Unsafe<TSort[number] | `-${TSort[number]}`>({
-      [Kind]: 'Sort',
-      type: 'string',
-      enum: opts.sort.flatMap((value) => [value, `-${value}`]),
-      default: opts.sort[0],
-    }),
+    sort: Type.Optional(
+      Type.Unsafe<TSort[number] | `-${TSort[number]}`>({
+        [Kind]: 'Sort',
+        type: 'string',
+        enum: opts.sort.flatMap((value) => [value, `-${value}`]),
+        default: opts.sort[0],
+      }),
+    ),
     'page[size]': Type.Optional(Type.Number({ min: 1 })),
     'page[after]': Type.Optional(Type.String()),
     'page[before]': Type.Optional(Type.String()),

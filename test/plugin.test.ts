@@ -122,6 +122,33 @@ describe('plugin', () => {
       });
     });
 
+    it('returns a well-formed error response if an error occurs while building the list response', async () => {
+      const res = await server.inject({
+        path: '/throws-error',
+        method: 'GET',
+        query: {
+          sort: 'name',
+          'page[size]': '10',
+        },
+      });
+
+      expect(res.json()).toEqual({
+        jsonapi: {
+          version: '1.1',
+          profile: [
+            'https://jsonapi.org/profiles/ethanresnick/cursor-pagination',
+          ],
+        },
+        errors: [
+          {
+            detail: 'Internal Server Error',
+            status: '500',
+            title: 'Internal Server Error',
+          },
+        ],
+      });
+    });
+
     describe('pagination links', () => {
       it('includes a next link', async () => {
         const res = await server.inject({
@@ -360,6 +387,120 @@ describe('plugin', () => {
           },
           meta: { count: 5 },
         });
+      });
+    });
+  });
+
+  describe('errorHandler', () => {
+    it('does not support range pagination', async () => {
+      const res = await server.inject({
+        path: '/items',
+        method: 'GET',
+        query: {
+          'page[size]': '5',
+          'page[after]': 'YWdlX18zMA==',
+          'page[before]': 'YWdlX180MA==',
+        },
+      });
+
+      expect(res.statusCode).toEqual(400);
+      expect(res.json()).toEqual({
+        jsonapi: {
+          version: '1.1',
+          profile: [
+            'https://jsonapi.org/profiles/ethanresnick/cursor-pagination',
+          ],
+        },
+        errors: [
+          {
+            title: 'Bad Request',
+            detail:
+              "Range pagination is not supported. Please supply either a 'before' or 'after' cursor",
+            status: '400',
+          },
+        ],
+      });
+    });
+
+    it('rejects nonsense pagination cursor', async () => {
+      const res = await server.inject({
+        path: '/items',
+        method: 'GET',
+        query: {
+          'page[size]': '5',
+          'page[after]': '1_2__3456',
+        },
+      });
+
+      expect(res.statusCode).toEqual(400);
+      expect(res.json()).toEqual({
+        jsonapi: {
+          version: '1.1',
+          profile: [
+            'https://jsonapi.org/profiles/ethanresnick/cursor-pagination',
+          ],
+        },
+        errors: [
+          {
+            title: 'Bad Request',
+            detail: "Invalid pagination cursor: '1_2__3456'",
+            status: '400',
+          },
+        ],
+      });
+    });
+
+    it('rejects pagination cursor with missing value', async () => {
+      const res = await server.inject({
+        path: '/items',
+        method: 'GET',
+        query: {
+          'page[size]': '5',
+          'page[after]': 'Y3JlYXRlZEF0X18=',
+        },
+      });
+
+      expect(res.statusCode).toEqual(400);
+      expect(res.json()).toEqual({
+        jsonapi: {
+          version: '1.1',
+          profile: [
+            'https://jsonapi.org/profiles/ethanresnick/cursor-pagination',
+          ],
+        },
+        errors: [
+          {
+            title: 'Bad Request',
+            detail: "Invalid pagination cursor: 'Y3JlYXRlZEF0X18='",
+            status: '400',
+          },
+        ],
+      });
+    });
+  });
+
+  describe('notFoundHandler', () => {
+    it('returns a well-formed 404', async () => {
+      const res = await server.inject({
+        path: '/not-a-real-route-isit',
+        method: 'GET',
+      });
+
+      expect(res.statusCode).toEqual(404);
+      expect(res.json()).toEqual({
+        jsonapi: {
+          version: '1.1',
+          profile: [
+            'https://jsonapi.org/profiles/ethanresnick/cursor-pagination',
+          ],
+        },
+        errors: [
+          {
+            title: 'Not Found',
+            detail: 'Not Found',
+            status: '404',
+          },
+        ],
       });
     });
   });
