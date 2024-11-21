@@ -1,5 +1,12 @@
 # @robcresswell/fastify-jsonapi
 
+> :warning: :warning: :warning:
+>
+> You're welcome to use this package, but it's very much in alpha and will
+> likely churn API a lot
+>
+> :warning: :warning: :warning:
+
 A collection of functions to help you build [JSON:API](https://jsonapi.org/)
 compliant APIs with [Fastify](https://fastify.dev/)
 
