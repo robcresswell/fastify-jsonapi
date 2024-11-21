@@ -1,5 +1,6 @@
 import {
   Kind,
+  TLiteral,
   TNumber,
   TObject,
   TOptional,
@@ -9,7 +10,8 @@ import {
   Type,
   TypeRegistry,
 } from '@fastify/type-provider-typebox';
-import { operators } from './filter.js';
+import { operators } from './querystring/filter.js';
+import { JSONAPI_VERSION } from './constants.js';
 
 TypeRegistry.Set(
   'Sort',
@@ -17,6 +19,10 @@ TypeRegistry.Set(
     return typeof val === 'string' && schema.enum.includes(val);
   },
 );
+
+export function Nullable<T extends TSchema>(schema: T) {
+  return Type.Union([schema, Type.Null()]);
+}
 
 type QuerySchema<TSort extends string[], TFilterKeys extends string> = TObject<
   {
@@ -27,7 +33,7 @@ type QuerySchema<TSort extends string[], TFilterKeys extends string> = TObject<
   } & { [k in TFilterKeys as `filter[${k}]`]: TString }
 >;
 
-export function buildTypeboxQuerySchema<
+export function querySchema<
   TSort extends string[],
   TFilter extends string,
 >(opts: { sort: TSort; filters: Record<TFilter, TSchema> }) {
@@ -62,4 +68,48 @@ function appendOperatorToFilters([filterName, schema]: [
       schema,
     ]),
   ];
+}
+
+export function objectResponseSchema<
+  TType extends TLiteral,
+  TAttributes extends TObject,
+>({ type, attributes }: { type: TType; attributes: TAttributes }) {
+  return Type.Object({
+    jsonapi: Type.Object({
+      version: Type.Literal(JSONAPI_VERSION),
+    }),
+    links: Type.Object({
+      self: Type.String({ format: 'uri' }),
+      next: Nullable(Type.String({ format: 'uri' })),
+      prev: Nullable(Type.String({ format: 'uri' })),
+    }),
+    data: Type.Object({
+      id: Type.String({ format: 'uuid' }),
+      type,
+      attributes,
+    }),
+  });
+}
+
+export function listResponseSchema<
+  TType extends TLiteral,
+  TAttributes extends TObject,
+>({ type, attributes }: { type: TType; attributes: TAttributes }) {
+  return Type.Object({
+    jsonapi: Type.Object({
+      version: Type.Literal(JSONAPI_VERSION),
+    }),
+    links: Type.Object({
+      self: Type.String({ format: 'uri' }),
+      next: Nullable(Type.String({ format: 'uri' })),
+      prev: Nullable(Type.String({ format: 'uri' })),
+    }),
+    data: Type.Array(
+      Type.Object({
+        id: Type.String({ format: 'uuid' }),
+        type,
+        attributes,
+      }),
+    ),
+  });
 }

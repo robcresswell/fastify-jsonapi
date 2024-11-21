@@ -7,7 +7,7 @@ import {
 import { jsonApiPlugin } from '../src/plugin.js';
 import { IncomingMessage, Server, ServerResponse } from 'node:http';
 import { parseQuery } from '../src/querystring/parse.js';
-import { buildTypeboxQuerySchema } from '../src/querystring/typebox-schema.js';
+import { buildTypeboxQuerySchema } from '../src/typebox.js';
 
 export type TestServer = FastifyInstance<
   Server,
