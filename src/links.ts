@@ -1,64 +1,55 @@
-import { Item } from './types.js';
 import { encodePageCursor } from './encoding.js';
-import { Pagination } from './types.js';
+import { Pagination, ResourceObject } from './types.js';
 
-export function assembleLinks<T extends Item>(opts: {
+type PaginationLinks = {
+  self: string;
+  prev: string | null;
+  next: string | null;
+} & Record<string, string | null>;
+
+export function assembleLinks(opts: {
   self: URL;
-  items: T[];
+  data: ResourceObject[];
   hasMore: boolean;
   pagination: Pagination<string>;
-}): Record<string, string | null> {
-  const { self, items, hasMore } = opts;
+}): PaginationLinks {
+  const { self, data, hasMore } = opts;
 
-  const links: Record<string, string | null> = {
+  const links: PaginationLinks = {
     self: self.toString(),
     prev: null,
     next: null,
   };
 
-  if (items.length === 0) {
+  if (data.length === 0) {
     return links;
   }
+
+  const after = self.searchParams.get('page[after]');
+  if (after) {
+    self.searchParams.delete('page[after]');
+    const prevUrl = new URL(self);
+    prevUrl.searchParams.set('page[before]', after);
+    links.prev = prevUrl.toString();
+  }
+
+  if (!hasMore) return links;
+
+  const lastItem = data[data.length - 1];
 
   const { field, order, limit } = opts.pagination;
   const pageSize = limit.toString();
 
-  if (self.searchParams.has('page[after]')) {
-    const item = items[0];
+  if (!lastItem?.attributes || !(field in lastItem.attributes)) return links;
 
-    if (item) {
-      const prevUrl = new URL(self);
-      prevUrl.searchParams.delete('page[after]');
-      prevUrl.searchParams.set(
-        'page[before]',
-        encodePageCursor({
-          field,
-          val: item[field],
-          order,
-        }),
-      );
-      prevUrl.searchParams.set('page[size]', pageSize);
-      links.prev = prevUrl.toString();
-    }
-  }
-
-  if (hasMore) {
-    const lastItem = items[items.length - 1];
-
-    if (lastItem) {
-      const nextUrl = new URL(self);
-      nextUrl.searchParams.set(
-        'page[after]',
-        encodePageCursor({
-          field,
-          val: lastItem[field],
-          order,
-        }),
-      );
-      nextUrl.searchParams.set('page[size]', pageSize);
-      links.next = nextUrl.toString();
-    }
-  }
+  const val = lastItem.attributes[field];
+  const nextUrl = new URL(self);
+  nextUrl.searchParams.set(
+    'page[after]',
+    encodePageCursor({ field, val, order }),
+  );
+  nextUrl.searchParams.set('page[size]', pageSize);
+  links.next = nextUrl.toString();
 
   return links;
 }

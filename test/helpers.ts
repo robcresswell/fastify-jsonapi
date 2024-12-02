@@ -6,8 +6,9 @@ import {
 } from '@fastify/type-provider-typebox';
 import { jsonApiPlugin } from '../src/plugin.js';
 import { IncomingMessage, Server, ServerResponse } from 'node:http';
-import { parseQuery } from '../src/querystring/parse.js';
-import { buildTypeboxQuerySchema } from '../src/typebox.js';
+import { listResponseSchema, querySchema } from '../src/typebox.js';
+import fastifySwagger from '@fastify/swagger';
+import { extractPaginationFromQuery, Pagination } from '../src/index.js';
 
 export type TestServer = FastifyInstance<
   Server,
@@ -50,12 +51,8 @@ const data = [
   },
 ];
 
-function fakeDb(
-  field: 'name' | 'createdAt',
-  limit: number,
-  order: 'asc' | 'desc',
-  val?: string,
-) {
+function fakeDb(pagination: Pagination<'name' | 'createdAt'>) {
+  const { field, limit, order, val } = pagination;
   const sorted = data.sort((a, b) => (a[field] > b[field] ? 1 : -1));
 
   if (order === 'desc') sorted.reverse();
@@ -78,39 +75,59 @@ export async function createTestServer() {
     .withTypeProvider<TypeBoxTypeProvider>()
     .setValidatorCompiler(TypeBoxValidatorCompiler);
 
+  await server.register(fastifySwagger, { openapi: {} });
+
   await server.register(jsonApiPlugin, {
     setNotFoundHandler: true,
     setErrorHandler: true,
   });
 
-  const querySchema = buildTypeboxQuerySchema({
+  const querystring = querySchema({
     sort: ['name', 'createdAt'] as const,
     filters: { name: Type.Optional(Type.String()) },
+    include: ['other', 'more'],
   });
+
+  const response = {
+    200: listResponseSchema({
+      data: Type.Array(
+        Type.Object({
+          id: Type.String({ format: 'uuid' }),
+          type: Type.Literal('item'),
+          attributes: Type.Object({
+            name: Type.String(),
+            createdAt: Type.String(),
+            otherId: Type.String(),
+          }),
+        }),
+      ),
+    }),
+  };
 
   server.get(
     '/items',
     {
       schema: {
-        querystring: querySchema,
+        querystring,
+        response,
       },
     },
     async (req, reply) => {
-      const { pagination } = parseQuery(req.query);
-      const { field, limit, order, val } = pagination;
-      const { items, hasMore } = fakeDb(field, limit, order, val);
+      const pagination = extractPaginationFromQuery(req.query);
+      const { items, hasMore } = fakeDb(pagination);
+
+      const data = items.map((item) => ({
+        type: 'item',
+        id: item.id,
+        attributes: {
+          name: item.name,
+          createdAt: item.createdAt,
+          otherId: item.otherId,
+        },
+      }));
 
       return reply.list({
-        items,
-        itemMapper: (item) => ({
-          type: 'item',
-          id: item.id,
-          attributes: {
-            name: item.name,
-            createdAt: item.createdAt,
-            otherId: item.otherId,
-          },
-        }),
+        data,
         hasMore,
         pagination,
       });
@@ -119,14 +136,7 @@ export async function createTestServer() {
 
   server.get('/empty', async (_req, reply) => {
     return reply.list({
-      items: [],
-      itemMapper: () => {
-        return {
-          type: 'item',
-          id: '1',
-          attributes: {},
-        };
-      },
+      data: [],
       hasMore: false,
       pagination: { field: 'name', limit: 10, order: 'asc' },
     });
@@ -134,10 +144,7 @@ export async function createTestServer() {
 
   server.get('/throws-error', async (_req, reply) => {
     return reply.list({
-      items: [{ id: '123-456-789' }],
-      itemMapper: () => {
-        throw new Error();
-      },
+      data: [],
       hasMore: false,
       pagination: { field: 'name', limit: 10, order: 'asc' },
     });

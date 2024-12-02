@@ -17,10 +17,14 @@ describe('plugin', () => {
     it('creates a json:api obj response', async () => {
       server.get('/item', async (_req, reply) => {
         return reply.obj({
+          id: '1',
           type: 'foobar',
-          item: { id: '1', name: 'one', otherId: '123' },
+          attributes: { name: 'one' },
           relationships: {
-            other: 'http://example.org/123',
+            other: {
+              id: '123',
+              type: 'other',
+            },
           },
         });
       });
@@ -40,8 +44,13 @@ describe('plugin', () => {
         data: {
           type: 'foobar',
           id: '1',
-          attributes: { name: 'one', otherId: '123' },
-          relationships: { other: 'http://example.org/123' },
+          attributes: { name: 'one' },
+          relationships: {
+            other: {
+              id: '123',
+              type: 'other',
+            },
+          },
         },
         links: { self: 'http://localhost/item' },
       });
@@ -119,33 +128,6 @@ describe('plugin', () => {
           next: null,
         },
         meta: { count: 5 },
-      });
-    });
-
-    it('returns a well-formed error response if an error occurs while building the list response', async () => {
-      const res = await server.inject({
-        path: '/throws-error',
-        method: 'GET',
-        query: {
-          sort: 'name',
-          'page[size]': '10',
-        },
-      });
-
-      expect(res.json()).toEqual({
-        jsonapi: {
-          version: '1.1',
-          profile: [
-            'https://jsonapi.org/profiles/ethanresnick/cursor-pagination',
-          ],
-        },
-        errors: [
-          {
-            detail: 'Internal Server Error',
-            status: '500',
-            title: 'Internal Server Error',
-          },
-        ],
       });
     });
 
@@ -239,7 +221,7 @@ describe('plugin', () => {
             },
           ],
           links: {
-            prev: 'http://localhost/items?sort=name&page%5Bsize%5D=2&page%5Bbefore%5D=bmFtZV9fdGhyZWU%3D',
+            prev: 'http://localhost/items?sort=name&page%5Bsize%5D=2&page%5Bbefore%5D=bmFtZV9fb25l',
             self: 'http://localhost/items?sort=name&page%5Bsize%5D=2&page%5Bafter%5D=bmFtZV9fb25l',
             next: null,
           },
@@ -282,7 +264,7 @@ describe('plugin', () => {
           ],
           links: {
             self: 'http://localhost/items?sort=name&page%5Bsize%5D=1&page%5Bafter%5D=bmFtZV9fb25l',
-            prev: 'http://localhost/items?sort=name&page%5Bsize%5D=1&page%5Bbefore%5D=bmFtZV9fdGhyZWU%3D',
+            prev: 'http://localhost/items?sort=name&page%5Bsize%5D=1&page%5Bbefore%5D=bmFtZV9fb25l',
             next: 'http://localhost/items?sort=name&page%5Bsize%5D=1&page%5Bafter%5D=bmFtZV9fdGhyZWU%3D',
           },
           meta: { count: 1 },

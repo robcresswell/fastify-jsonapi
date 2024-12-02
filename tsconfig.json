@@ -1,15 +1,13 @@
 {
+  "extends": "@tsconfig/node22/tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "target": "ES2022",
-    "lib": ["ES2023"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "pretty": true,
     "sourceMap": true,
     "declaration": true,
-    "strict": true,
-    "esModuleInterop": true,
+    "declarationMap": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,

@@ -11,6 +11,14 @@
       "import": "./dist/typebox.js"
     }
   },
+  "scripts": {
+    "dev": " tsc --watch --project tsconfig.build.json",
+    "test": "vitest",
+    "lint": "eslint src test scripts",
+    "build": "tsc --project tsconfig.build.json",
+    "prepublish": "npm run build",
+    "coverage": "vitest run --coverage ; open reports/coverage/index.html"
+  },
   "types": "dist/index.d.ts",
   "files": [
     "dist/",
@@ -44,12 +52,14 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
+    "@fastify/swagger": "^9.4.0",
+    "@tsconfig/node22": "^22.0.0",
     "@types/eslint__js": "^8.42.3",
-    "@types/node": "^22.9.1",
+    "@types/node": "^22.9.3",
     "@vitest/coverage-v8": "^2.1.5",
     "eslint-config-prettier": "^9.1.0",
     "tsx": "^4.19.2",
-    "typescript": "^5.6.3",
+    "typescript": "^5.7.2",
     "typescript-eslint": "^8.15.0",
     "vitest": "^2.1.5"
   }

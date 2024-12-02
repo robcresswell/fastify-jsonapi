@@ -1,5 +1,8 @@
 import { encodePageCursor } from '../src/encoding.js';
-import { parseQuery } from '../src/querystring/parse.js';
+import {
+  extractFiltersFromQuery,
+  extractPaginationFromQuery,
+} from '../src/querystring/parse.js';
 import { describe, expect, it } from 'vitest';
 
 describe('querystring parser', () => {
@@ -9,7 +12,7 @@ describe('querystring parser', () => {
       'page[size]': 17,
     };
 
-    const { pagination } = parseQuery(querystring);
+    const pagination = extractPaginationFromQuery(querystring);
 
     expect(pagination).toEqual({
       limit: 17,
@@ -24,7 +27,7 @@ describe('querystring parser', () => {
       'page[size]': 17,
     };
 
-    const { pagination } = parseQuery(querystring);
+    const pagination = extractPaginationFromQuery(querystring);
 
     expect(pagination).toEqual({
       limit: 17,
@@ -40,7 +43,7 @@ describe('querystring parser', () => {
       'page[after]': '123456',
     };
 
-    expect(() => parseQuery(querystring)).toThrow();
+    expect(() => extractPaginationFromQuery(querystring)).toThrow();
   });
 
   it('converts a cursor into pagination params (desc)', () => {
@@ -54,10 +57,10 @@ describe('querystring parser', () => {
       sort: 'name',
       'page[after]': cursor,
     };
-    const { pagination } = parseQuery(querystring);
+    const pagination = extractPaginationFromQuery(querystring);
 
     expect(pagination).toEqual({
-      limit: 1000,
+      limit: 100,
       field: 'id',
       order: 'desc',
       val: id,
@@ -75,10 +78,10 @@ describe('querystring parser', () => {
       sort: 'name',
       'page[after]': cursor,
     };
-    const { pagination } = parseQuery(querystring);
+    const pagination = extractPaginationFromQuery(querystring);
 
     expect(pagination).toEqual({
-      limit: 1000,
+      limit: 100,
       field: 'name',
       order: 'asc',
       val: name,
@@ -96,10 +99,10 @@ describe('querystring parser', () => {
       sort: 'name',
       'page[before]': cursor,
     };
-    const { pagination } = parseQuery(querystring);
+    const pagination = extractPaginationFromQuery(querystring);
 
     expect(pagination).toEqual({
-      limit: 1000,
+      limit: 100,
       field: 'name',
       order: 'asc',
       val: name,
@@ -137,14 +140,11 @@ describe('querystring parser', () => {
       [{ 'filter[]': 'foo' }, {}],
     ];
 
-    cases.forEach(([filters, expected]) => {
-      it(JSON.stringify(filters), () => {
-        const parsed = parseQuery({
-          sort: 'id',
-          ...filters,
-        });
+    cases.forEach(([queryFilters, expected]) => {
+      it(JSON.stringify(queryFilters), () => {
+        const filters = extractFiltersFromQuery(queryFilters);
 
-        expect(parsed.filters).toEqual(expected);
+        expect(filters).toEqual(expected);
       });
     });
   });
@@ -159,14 +159,11 @@ describe('querystring parser', () => {
       ],
     ];
 
-    cases.forEach(([filters, expected]) => {
-      it(JSON.stringify(filters), () => {
-        expect(() =>
-          parseQuery({
-            sort: 'id',
-            ...filters,
-          }),
-        ).toThrowError(expected);
+    cases.forEach(([queryFilters, expected]) => {
+      it(JSON.stringify(queryFilters), () => {
+        expect(() => extractFiltersFromQuery(queryFilters)).toThrowError(
+          expected,
+        );
       });
     });
   });
