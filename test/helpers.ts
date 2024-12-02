@@ -84,7 +84,9 @@ export async function createTestServer() {
 
   const querystring = querySchema({
     sort: ['name', 'createdAt'] as const,
-    filters: { name: Type.Optional(Type.String()) },
+    filters: {
+      name: Type.Optional(Type.String()),
+    },
     include: ['other', 'more'],
   });
 

@@ -13,7 +13,7 @@ async function main() {
 
   const exampleMdContentArr: string[] = [
     '# Examples',
-    'See the [JSON:API website](https://jsonapi.org/) for detailed examples on the spec itself',
+    'See the [JSON:API website](https://jsonapi.org/) for detailed examples on the\nspec itself',
   ];
 
   for (const { parentPath, name } of exampleFiles) {
@@ -22,12 +22,9 @@ async function main() {
     const fileContents = await readFile(join(parentPath, name), 'utf-8');
     const title = name.slice(0, -3).split('-').map(capitalise).join(' ');
 
-    exampleMdContentArr.push(`## ${title}\n`);
+    exampleMdContentArr.push(`## ${title}`);
     exampleMdContentArr.push(
-      `\`\`\`ts${fileContents.replace(
-        '../src/index.js',
-        '@robcresswell/fastify-jsonapi',
-      )}\n\`\`\``,
+      `\`\`\`ts\n${rewriteImports(fileContents)}\n\`\`\``,
     );
   }
 
@@ -35,6 +32,12 @@ async function main() {
   const exampleMdPath = join(examplesDir, '..', 'EXAMPLES.md');
 
   await writeFile(exampleMdPath, exampleMdContent, { encoding: 'utf-8' });
+}
+
+function rewriteImports(contents: string) {
+  return contents
+    .replace('../src/index.js', '@robcresswell/fastify-jsonapi')
+    .replace('../src/typebox.js', '@robcresswell/fastify-jsonapi/typebox');
 }
 
 main().catch((err: unknown) => {

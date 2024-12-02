@@ -1,6 +1,7 @@
 import {
   Kind,
   TArray,
+  TBoolean,
   TLiteral,
   TNumber,
   TObject,
@@ -40,8 +41,14 @@ type QuerySchema<
     'page[after]': TOptional<TString>;
     'page[before]': TOptional<TString>;
     include: TOptional<TArray<TUnion<TLiteral<TInclude>[]>>>;
-  } & { [k in TFilterKeys as `filter[${k}]`]: TOptional<TString> } & {
-    [k in TFilterKeys as `filter[${k}][${Operator}]`]: TOptional<TString>;
+  } & {
+    [k in TFilterKeys as `filter[${k}]`]: TOptional<
+      TString | TNumber | TBoolean
+    >;
+  } & {
+    [k in TFilterKeys as `filter[${k}][${Operator}]`]: TOptional<
+      TString | TNumber | TBoolean
+    >;
   }
 >;
 
@@ -52,7 +59,7 @@ export function querySchema<
 >(opts: {
   sort: TSort;
   defaultSort?: TSort[number] | `-${TSort[number]}`;
-  filters: Record<TFilter, TSchema>;
+  filters: Record<TFilter, TString | TNumber | TBoolean>;
   include?: TInclude[];
 }) {
   const include = Type.Optional(

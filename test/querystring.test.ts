@@ -111,7 +111,7 @@ describe('querystring parser', () => {
 
   describe('parses filters', () => {
     const cases: [
-      filters: Record<string, string | number>,
+      filters: Record<string, string | number | boolean>,
       expected: Record<
         string,
         { field: string; operator: string; value: unknown }
@@ -125,6 +125,18 @@ describe('querystring parser', () => {
         { 'filter[id][gt]': 1 },
         {
           id: { field: 'id', operator: 'gt', value: 1 },
+        },
+      ],
+      [
+        { 'filter[closedAt]': 'null' },
+        {
+          closedAt: { field: 'closedAt', operator: 'eq', value: null },
+        },
+      ],
+      [
+        { 'filter[open][ne]': true },
+        {
+          open: { field: 'open', operator: 'ne', value: true },
         },
       ],
       [
@@ -155,6 +167,12 @@ describe('querystring parser', () => {
         { 'filter[name][bar]': '5' },
         new Error(
           "Invalid operator 'bar' in filter[name][bar]=5. Operators must be one of 'eq', 'gte', 'gt', 'lt', 'lte', 'ne'",
+        ),
+      ],
+      [
+        { 'filter[closedAt][gte]': 'null' },
+        new Error(
+          "Invalid operator 'gte' in filter[closedAt][gte]=null. Operators must be one either 'eq' or 'ne' for null or boolean filters",
         ),
       ],
     ];

@@ -1,6 +1,7 @@
 # Examples
 
-See the [JSON:API website](https://jsonapi.org/) for detailed examples on the spec itself
+See the [JSON:API website](https://jsonapi.org/) for detailed examples on the
+spec itself
 
 ## List With Filter
 
@@ -12,10 +13,11 @@ import {
   TypeBoxValidatorCompiler,
 } from '@fastify/type-provider-typebox';
 import {
+  extractFiltersFromQuery,
+  extractPaginationFromQuery,
   jsonApiPlugin,
-  buildTypeboxQuerySchema,
-  parseQuery,
 } from '@robcresswell/fastify-jsonapi';
+import { querySchema } from '@robcresswell/fastify-jsonapi/typebox';
 
 export async function createTestServer() {
   const server = fastify()
@@ -24,26 +26,21 @@ export async function createTestServer() {
 
   await server.register(jsonApiPlugin);
 
-  const querySchema = buildTypeboxQuerySchema({
+  const querystring = querySchema({
     sort: [],
     filters: { teamId: Type.String() },
   });
 
-  server.get(
-    '/users',
-    { schema: { querystring: querySchema } },
-    async (req, reply) => {
-      const { pagination, filters } = parseQuery(req.query);
+  server.get('/users', { schema: { querystring } }, async (req, reply) => {
+    const pagination = extractPaginationFromQuery(req.query);
+    const filters = extractFiltersFromQuery(req.query);
 
-      const users = getUsers();
+    const users = getUsers();
 
-      const items = users.filter(
-        (user) => user.teamId === filters.teamId.value,
-      );
-
-      return reply.list({
-        items,
-        itemMapper: ({ id, teamId }) => ({
+    const data = users
+      .filter((user) => user.teamId === filters.teamId.value)
+      .map(({ id, teamId }) => {
+        return {
           type: 'users',
           id,
           attributes: {},
@@ -52,21 +49,22 @@ export async function createTestServer() {
               links: {
                 self: `https://my-website/teams/${teamId}`,
               },
-              data: {
-                type: 'teams',
-                id: teamId,
-              },
+              type: 'teams',
+              id: teamId,
             },
           },
           links: {
             self: 'https://my-website/users',
           },
-        }),
-        pagination,
-        hasMore: true,
+        };
       });
-    },
-  );
+
+    return reply.list({
+      data,
+      pagination,
+      hasMore: true,
+    });
+  });
 
   return server;
 }
@@ -86,6 +84,7 @@ function getUsers() {
 
   return users;
 }
+
 ```
 
 ## List
@@ -97,11 +96,8 @@ import {
   TypeBoxTypeProvider,
   TypeBoxValidatorCompiler,
 } from '@fastify/type-provider-typebox';
-import {
-  jsonApiPlugin,
-  buildTypeboxQuerySchema,
-  parseQuery,
-} from '@robcresswell/fastify-jsonapi';
+import { extractPaginationFromQuery, jsonApiPlugin } from '@robcresswell/fastify-jsonapi';
+import { querySchema } from '@robcresswell/fastify-jsonapi/typebox';
 
 export async function createTestServer() {
   const server = fastify()
@@ -110,39 +106,42 @@ export async function createTestServer() {
 
   await server.register(jsonApiPlugin);
 
-  const querySchema = buildTypeboxQuerySchema({
+  const querystring = querySchema({
     sort: ['name'],
     filters: { name: Type.Optional(Type.String()) },
   });
 
-  server.get(
-    '/',
-    { schema: { querystring: querySchema } },
-    async (req, reply) => {
-      const { pagination } = parseQuery(req.query);
+  server.get('/', { schema: { querystring } }, async (req, reply) => {
+    const pagination = extractPaginationFromQuery(req.query);
 
-      return reply.list({
-        items: [
-          { id: '1', name: 'one', otherId: '123' },
-          { id: '2', name: 'two', otherId: '456' },
-        ],
-        itemMapper: ({ id, name, otherId }) => ({
-          type: 'foobar',
-          id,
-          attributes: { name },
-          relationships: {
-            other: {
-              type: 'others',
-              id: otherId,
-            },
+    // These would be loaded from a db, api, etc.
+    const items = [
+      { id: '1', name: 'one', otherId: '123' },
+      { id: '2', name: 'two', otherId: '456' },
+    ];
+
+    const data = items.map(({ id, name, otherId }) => {
+      return {
+        type: 'foobar',
+        id,
+        attributes: { name },
+        relationships: {
+          other: {
+            type: 'others',
+            id: otherId,
           },
-        }),
-        pagination,
-        hasMore: true,
-      });
-    },
-  );
+        },
+      };
+    });
+
+    return reply.list({
+      data,
+      pagination,
+      hasMore: true,
+    });
+  });
 
   return server;
 }
+
 ```

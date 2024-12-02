@@ -37,6 +37,20 @@ export class InvalidFilterOperatorError extends HttpError {
   }
 }
 
+export class InvalidFilterForNullOrBoolFilterError extends HttpError {
+  constructor(operator: string, queryKey: string, queryVal: string | number) {
+    const message = `Invalid operator '${operator}' in ${queryKey}=${String(
+      queryVal,
+    )}. Operators must be one either 'eq' or 'ne' for null or boolean filters`;
+
+    super(400, message);
+
+    Error.captureStackTrace(this, InvalidFilterForNullOrBoolFilterError);
+
+    this.name = 'InvalidFilterForNullOrBoolFilterError';
+  }
+}
+
 export class InvalidPaginationCursorError extends HttpError {
   constructor(cursor: string) {
     super(400, `Invalid pagination cursor: '${cursor}'`);
