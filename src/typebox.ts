@@ -76,7 +76,7 @@ export function querySchema<
   const querySchema = Type.Object(
     {
       sort,
-      'page[size]': Type.Optional(Type.Number({ minimum: 1 })),
+      'page[size]': Type.Optional(Type.Integer({ minimum: 1 })),
       'page[after]': Type.Optional(Type.String()),
       'page[before]': Type.Optional(Type.String()),
       include,
@@ -211,7 +211,7 @@ export function listResponseSchema({
       next: Nullable(Type.String({ format: 'uri' })),
       prev: Nullable(Type.String({ format: 'uri' })),
     }),
-    meta: Type.Object(meta ?? { count: Type.Number() }),
+    meta: Type.Object(meta ?? { count: Type.Integer() }),
     included: Type.Optional(
       Type.Intersect(
         (included ?? []).map((inc) => {

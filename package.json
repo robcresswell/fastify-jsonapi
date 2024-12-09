@@ -23,7 +23,9 @@
   "files": [
     "dist/",
     "src/",
-    "examples/"
+    "examples/",
+    "README.md",
+    "LICENSE"
   ],
   "repository": {
     "type": "git",

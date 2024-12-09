@@ -113,7 +113,7 @@ export async function createTestServer() {
         },
       },
       meta: {
-        count: Type.Number(),
+        count: Type.Integer(),
       },
     }),
   };
