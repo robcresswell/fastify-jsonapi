@@ -16,7 +16,7 @@
     "test": "vitest",
     "lint": "eslint src test scripts",
     "build": "tsc --project tsconfig.build.json",
-    "prepublish": "npm run build",
+    "prepublishOnly": "rm -r dist && npm run build",
     "coverage": "vitest run --coverage ; open reports/coverage/index.html"
   },
   "types": "dist/index.d.ts",
