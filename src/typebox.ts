@@ -140,6 +140,10 @@ interface TResourceObject {
   links?: Record<string, string | null>;
 }
 
+function optionalObj(obj?: Record<string, TSchema>) {
+  return obj ? Type.Object(obj) : Type.Optional(Type.Object({}));
+}
+
 export function objectResponseSchema({
   data,
   meta,
@@ -172,7 +176,7 @@ export function objectResponseSchema({
               id: inc.id,
               type: inc.type,
               attributes: Type.Object(inc.attributes ?? {}),
-              relationships: Type.Object(inc.relationships ?? {}),
+              relationships: optionalObj(inc.relationships),
             }),
           );
         }),
@@ -182,7 +186,7 @@ export function objectResponseSchema({
       self: Type.String({ format: 'uri' }),
       related: Type.Optional(Type.String({ format: 'uri' })),
     }),
-    meta: Type.Object(meta ?? {}),
+    meta: optionalObj(meta),
   });
 }
 
@@ -216,25 +220,19 @@ export function listResponseSchema({
               id: inc.id,
               type: inc.type,
               attributes: Type.Object(inc.attributes ?? {}),
-              relationships: inc.relationships
-                ? Type.Object(inc.relationships)
-                : Type.Optional(Type.Object({})),
+              relationships: optionalObj(inc.relationships),
             }),
           );
         }),
       ),
     ),
-    relationships: relationships
-      ? Type.Object(relationships)
-      : Type.Optional(Type.Object({})),
+    relationships: optionalObj(relationships),
     data: Type.Array(
       Type.Object({
         id: data.id,
         type: data.type,
         attributes: Type.Object(data.attributes ?? {}),
-        relationships: data.relationships
-          ? Type.Object(data.relationships)
-          : Type.Optional(Type.Object({})),
+        relationships: optionalObj(data.relationships),
       }),
     ),
   });

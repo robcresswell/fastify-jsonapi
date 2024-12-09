@@ -423,7 +423,6 @@ exports[`api > returns a well formed api 1`] = `
                     "jsonapi",
                     "data",
                     "links",
-                    "meta",
                   ],
                   "type": "object",
                   Symbol(json-schema-resolver.ignore): true,

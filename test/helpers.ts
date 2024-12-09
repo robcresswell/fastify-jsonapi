@@ -22,41 +22,46 @@ export type TestServer = FastifyInstance<
   TypeBoxTypeProvider
 >;
 
-const data = [
-  {
-    id: '1',
-    name: 'one',
-    createdAt: new Date('2024-01-01T01:00:00'),
-    otherId: '123',
-  },
-  {
-    id: '2',
-    name: 'two',
-    createdAt: new Date('2024-02-02T02:00:00'),
-    otherId: '456',
-  },
-  {
-    id: '3',
-    name: 'three',
-    createdAt: new Date('2024-03-03T03:00:00'),
-    otherId: '789',
-  },
-  {
-    id: '4',
-    name: 'four',
-    createdAt: new Date('2024-04-04T04:00:00'),
-    otherId: '123',
-  },
-  {
-    id: '5',
-    name: 'five',
-    createdAt: new Date('2024-05-05T05:00:00'),
-    otherId: '456',
-  },
-];
+function getData() {
+  const data = [
+    {
+      id: '1',
+      name: 'one',
+      createdAt: new Date('2024-01-01T01:00:00Z'),
+      otherId: '123',
+    },
+    {
+      id: '2',
+      name: 'two',
+      createdAt: new Date('2024-02-02T02:00:00Z'),
+      otherId: '456',
+    },
+    {
+      id: '3',
+      name: 'three',
+      createdAt: new Date('2024-03-03T03:00:00Z'),
+      otherId: '789',
+    },
+    {
+      id: '4',
+      name: 'four',
+      createdAt: new Date('2024-04-04T04:00:00Z'),
+      otherId: '123',
+    },
+    {
+      id: '5',
+      name: 'five',
+      createdAt: new Date('2024-05-05T05:00:00Z'),
+      otherId: '456',
+    },
+  ];
+
+  return data;
+}
 
 function fakeDb(pagination: Pagination<'name' | 'createdAt'>) {
   const { field, limit, order, val } = pagination;
+  const data = getData();
   const sorted = data.sort((a, b) => (a[field] > b[field] ? 1 : -1));
 
   if (order === 'desc') sorted.reverse();
@@ -176,7 +181,7 @@ export async function createTestServer() {
       const { items } = fakeDb({ limit: 100, field: 'name', order: 'asc' });
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const data = items.find((item) => (item.id = req.params.id))!;
+      const data = items.find((item) => item.id === req.params.id)!;
 
       return reply.obj({
         id: data.id,
@@ -188,9 +193,11 @@ export async function createTestServer() {
               id: data.otherId,
               type: 'other',
             },
+            links: {
+              self: 'https://example.org/others/' + data.otherId,
+            },
           },
         },
-        links: {},
       });
     },
   );

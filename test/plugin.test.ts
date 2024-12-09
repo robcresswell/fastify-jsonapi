@@ -14,23 +14,9 @@ describe('plugin', () => {
   });
 
   describe('reply.obj()', () => {
-    it('creates a json:api obj response', async () => {
-      server.get('/item', async (_req, reply) => {
-        return reply.obj({
-          id: '1',
-          type: 'foobar',
-          attributes: { name: 'one' },
-          relationships: {
-            other: {
-              id: '123',
-              type: 'other',
-            },
-          },
-        });
-      });
-
+    it.only('creates a json:api obj response', async () => {
       const res = await server.inject({
-        path: '/item',
+        path: '/items/4',
         method: 'GET',
       });
 
@@ -42,17 +28,22 @@ describe('plugin', () => {
           ],
         },
         data: {
-          type: 'foobar',
-          id: '1',
-          attributes: { name: 'one' },
+          type: 'item',
+          id: '4',
+          attributes: { name: 'four' },
           relationships: {
             other: {
-              id: '123',
-              type: 'other',
+              data: {
+                id: '123',
+                type: 'other',
+              },
+              links: {
+                self: 'https://example.org/others/123',
+              },
             },
           },
         },
-        links: { self: 'http://localhost/item' },
+        links: { self: 'http://localhost/items/4' },
       });
     });
   });
