@@ -43,8 +43,9 @@ exports[`api > returns a well formed api 1`] = `
             "name": "page[size]",
             "required": false,
             "schema": {
+              "maximum": 100,
               "minimum": 1,
-              "type": "number",
+              "type": "integer",
             },
           },
           {
@@ -247,7 +248,7 @@ exports[`api > returns a well formed api 1`] = `
                     "meta": {
                       "properties": {
                         "count": {
-                          "type": "number",
+                          "type": "integer",
                         },
                       },
                       "required": [
