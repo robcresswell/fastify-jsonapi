@@ -1,4 +1,4 @@
-import { type Operator } from '../types.js';
+import { Filters, type Operator } from '../types.js';
 import { decodePageCursor } from '../encoding.js';
 import { operators } from './filter.js';
 import {
@@ -22,19 +22,21 @@ type ExtractFieldName<T> = T extends `filter[${infer Field}]${infer _Rest}`
 type FilterKeys<T> = keyof T & `filter[${string}]${string}`;
 type FilterFields<T> = ExtractFieldName<FilterKeys<T>>;
 
-interface FilterInfo<Field extends string> {
-  field: Field;
-  operator: Operator;
-  value: string | boolean | number | null;
-}
+// interface FilterInfo<Field extends string> {
+//   field: Field;
+//   operator: Operator;
+//   value: string | boolean | number | null;
+// }
 
-type ParsedFilters<T> = {
-  [K in FilterFields<T>]: FilterInfo<K>;
-};
+// type ParsedFilters<T> = {
+//   [K in FilterFields<T>]: FilterInfo<K>;
+// };
 
-export function extractFiltersFromQuery<
-  T extends Record<string, string | number | boolean>,
->(query: T): ParsedFilters<T> {
+type ParsedFilters<T> = Filters<FilterFields<T>>;
+
+export function extractFiltersFromQuery<T extends Record<string, unknown>>(
+  query: T,
+): ParsedFilters<T> {
   const filters = {} as ParsedFilters<T>;
   Object.entries(query).forEach(([queryKey, queryVal]) => {
     const regexpRes = filterKeyRegex.exec(queryKey);
@@ -62,13 +64,21 @@ export function extractFiltersFromQuery<
           queryVal as string,
         );
       }
+
+      filters[filterField] = {
+        field: filterField,
+        operator,
+        value,
+      };
     }
 
-    filters[filterField] = {
-      field: filterField,
-      operator,
-      value,
-    };
+    if (typeof value === 'string' || typeof value === 'number') {
+      filters[filterField] = {
+        field: filterField,
+        operator,
+        value,
+      };
+    }
   });
 
   return filters;

@@ -6,6 +6,7 @@ import {
   TNumber,
   TObject,
   TOptional,
+  TRecord,
   TSchema,
   TString,
   TUnion,
@@ -41,15 +42,8 @@ type QuerySchema<
     'page[after]': TOptional<TString>;
     'page[before]': TOptional<TString>;
     include: TOptional<TArray<TUnion<TLiteral<TInclude>[]>>>;
-  } & {
-    [k in TFilterKeys as `filter[${k}]`]: TOptional<
-      TString | TNumber | TBoolean
-    >;
-  } & {
-    [k in TFilterKeys as `filter[${k}][${Operator}]`]: TOptional<
-      TString | TNumber | TBoolean
-    >;
-  }
+  } & Record<`filter[${TFilterKeys}]`, TString | TNumber | TBoolean> &
+    Record<`filter[${TFilterKeys}][${Operator}]`, TString | TNumber | TBoolean>
 >;
 
 export function querySchema<
@@ -59,7 +53,7 @@ export function querySchema<
 >(opts: {
   sort: TSort;
   defaultSort?: TSort[number] | `-${TSort[number]}`;
-  filters: Record<TFilter, TString | TNumber | TBoolean>;
+  filters: Record<TFilter, TString | TNumber | TBoolean | typeof nullFilter>;
   include?: TInclude[];
 }) {
   const include = Type.Optional(
@@ -86,62 +80,123 @@ export function querySchema<
       'page[after]': Type.Optional(Type.String()),
       'page[before]': Type.Optional(Type.String()),
       include,
-      ...Object.fromEntries(
-        Object.entries(opts.filters).flatMap(appendOperatorToFilters),
-      ),
+      ...withOps(opts.filters),
     },
     { additionalProperties: false },
-  ) as QuerySchema<TSort, TFilter, TInclude>;
+  ) as unknown as QuerySchema<TSort, TFilter, TInclude>;
 
   return querySchema;
 }
 
-function appendOperatorToFilters([filterName, schema]: [
-  filterName: string,
-  schema: unknown,
-]) {
-  return [
-    [`filter[${filterName}]`, schema],
-    ...operators.map((operator) => [
-      `filter[${filterName}][${operator}]`,
-      schema,
-    ]),
-  ];
+type WithOperators<TFilter extends string> = Record<
+  `filter[${TFilter}]`,
+  TSchema
+> &
+  Record<`filter[${TFilter}][${Operator}]`, TSchema>;
+
+function withOps<TFilter extends string>(
+  filters: Record<TFilter, TSchema>,
+): WithOperators<TFilter> {
+  const filtersWithOps = {} as Record<string, TSchema>;
+
+  for (const [filterName, schema] of Object.entries(filters) as [
+    TFilter,
+    TSchema,
+  ][]) {
+    filtersWithOps[`filter[${filterName}]`] = schema;
+
+    for (const operator of operators) {
+      filtersWithOps[`filter[${filterName}][${operator}]`] = schema;
+    }
+  }
+
+  return filtersWithOps;
 }
 
-export function objectResponseSchema<
-  TType extends TLiteral,
-  TAttributes extends TObject,
->({ type, attributes }: { type: TType; attributes: TAttributes }) {
+interface TResourceObject {
+  type: TLiteral<string>;
+  id: TString | TNumber;
+  attributes?: Record<string, TSchema>;
+  relationships?: Record<
+    string,
+    | TObject<{
+        data: TObject<{
+          id: TString;
+          type: TLiteral;
+        }>;
+        links?: TObject;
+      }>
+    | TObject<{
+        data: TArray<
+          TObject<{
+            id: TString;
+            type: TLiteral;
+            links?: TObject;
+          }>
+        >;
+        meta?: TRecord<TString>;
+      }>
+  >;
+  links?: Record<string, string | null>;
+}
+
+export function objectResponseSchema({
+  data,
+  meta,
+  relationships,
+  included,
+}: {
+  data: Omit<TResourceObject, 'links'>; // Resource links can just go at the top level for object responses
+  meta?: Record<string, TSchema>;
+  relationships?: TResourceObject['relationships'];
+  included?: TResourceObject[];
+}) {
+  const { id, type, attributes } = data;
+
   return Type.Object({
     jsonapi: Type.Object({
+      profile: Type.Array(Type.String()),
       version: Type.Literal(JSONAPI_VERSION),
     }),
+    data: Type.Object({
+      id,
+      type,
+      attributes: Type.Object(attributes ?? {}),
+      relationships: Type.Object(relationships ?? {}),
+    }),
+    included: Type.Optional(
+      Type.Intersect(
+        (included ?? []).map((inc) => {
+          return Type.Array(
+            Type.Object({
+              id: inc.id,
+              type: inc.type,
+              attributes: Type.Object(inc.attributes ?? {}),
+              relationships: Type.Object(inc.relationships ?? {}),
+            }),
+          );
+        }),
+      ),
+    ),
     links: Type.Object({
       self: Type.String({ format: 'uri' }),
-      next: Nullable(Type.String({ format: 'uri' })),
-      prev: Nullable(Type.String({ format: 'uri' })),
+      related: Type.Optional(Type.String({ format: 'uri' })),
     }),
-    data: Type.Object({
-      id: Type.String({ format: 'uuid' }),
-      type,
-      attributes,
-    }),
+    meta: Type.Object(meta ?? {}),
   });
 }
 
-export function listResponseSchema(opts: {
-  data: TArray<TObject>;
-  meta?: TObject;
-  // relationships?: TObject;
-  included?: TOptional<TArray<TObject>>;
+export function listResponseSchema({
+  data,
+  meta,
+  relationships,
+  included,
+}: {
+  data: TResourceObject;
+  meta?: Record<string, TSchema>;
+  relationships?: TResourceObject['relationships'];
+  included?: TResourceObject[];
 }) {
-  const {
-    data,
-    meta = Type.Record(Type.String(), Type.Unknown()),
-    included = Type.Optional(Type.Never()),
-  } = opts;
-
   return Type.Object({
     jsonapi: Type.Object({
       profile: Type.Array(Type.String()),
@@ -152,9 +207,35 @@ export function listResponseSchema(opts: {
       next: Nullable(Type.String({ format: 'uri' })),
       prev: Nullable(Type.String({ format: 'uri' })),
     }),
-    meta,
-    included,
-    // relationships: relationships ?? Type.Object({}),
-    data,
+    meta: Type.Object(meta ?? { count: Type.Number() }),
+    included: Type.Optional(
+      Type.Intersect(
+        (included ?? []).map((inc) => {
+          return Type.Array(
+            Type.Object({
+              id: inc.id,
+              type: inc.type,
+              attributes: Type.Object(inc.attributes ?? {}),
+              relationships: inc.relationships
+                ? Type.Object(inc.relationships)
+                : Type.Optional(Type.Object({})),
+            }),
+          );
+        }),
+      ),
+    ),
+    relationships: relationships
+      ? Type.Object(relationships)
+      : Type.Optional(Type.Object({})),
+    data: Type.Array(
+      Type.Object({
+        id: data.id,
+        type: data.type,
+        attributes: Type.Object(data.attributes ?? {}),
+        relationships: data.relationships
+          ? Type.Object(data.relationships)
+          : Type.Optional(Type.Object({})),
+      }),
+    ),
   });
 }

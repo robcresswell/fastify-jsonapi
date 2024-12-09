@@ -6,7 +6,11 @@ import {
 } from '@fastify/type-provider-typebox';
 import { jsonApiPlugin } from '../src/plugin.js';
 import { IncomingMessage, Server, ServerResponse } from 'node:http';
-import { listResponseSchema, querySchema } from '../src/typebox.js';
+import {
+  listResponseSchema,
+  objectResponseSchema,
+  querySchema,
+} from '../src/typebox.js';
 import fastifySwagger from '@fastify/swagger';
 import { extractPaginationFromQuery, Pagination } from '../src/index.js';
 
@@ -71,7 +75,9 @@ function fakeDb(pagination: Pagination<'name' | 'createdAt'>) {
 }
 
 export async function createTestServer() {
-  const server = fastify()
+  const server = fastify({
+    logger: { level: process.env.LOG_LEVEL ?? 'fatal' },
+  })
     .withTypeProvider<TypeBoxTypeProvider>()
     .setValidatorCompiler(TypeBoxValidatorCompiler);
 
@@ -82,7 +88,7 @@ export async function createTestServer() {
     setErrorHandler: true,
   });
 
-  const querystring = querySchema({
+  const listQuerystring = querySchema({
     sort: ['name', 'createdAt'] as const,
     filters: {
       name: Type.Optional(Type.String()),
@@ -90,19 +96,20 @@ export async function createTestServer() {
     include: ['other', 'more'],
   });
 
-  const response = {
+  const listResponse = {
     200: listResponseSchema({
-      data: Type.Array(
-        Type.Object({
-          id: Type.String({ format: 'uuid' }),
-          type: Type.Literal('item'),
-          attributes: Type.Object({
-            name: Type.String(),
-            createdAt: Type.String(),
-            otherId: Type.String(),
-          }),
-        }),
-      ),
+      data: {
+        id: Type.String({ format: 'uuid' }),
+        type: Type.Literal('item'),
+        attributes: {
+          name: Type.String(),
+          createdAt: Type.String(),
+          otherId: Type.String(),
+        },
+      },
+      meta: {
+        count: Type.Number(),
+      },
     }),
   };
 
@@ -110,8 +117,8 @@ export async function createTestServer() {
     '/items',
     {
       schema: {
-        querystring,
-        response,
+        querystring: listQuerystring,
+        response: listResponse,
       },
     },
     async (req, reply) => {
@@ -132,6 +139,58 @@ export async function createTestServer() {
         data,
         hasMore,
         pagination,
+      });
+    },
+  );
+
+  const objResponse = {
+    200: objectResponseSchema({
+      data: {
+        id: Type.String({ format: 'uuid' }),
+        type: Type.Literal('item'),
+        attributes: { name: Type.String() },
+      },
+      relationships: {
+        other: Type.Object({
+          data: Type.Object({
+            id: Type.String({ format: 'uuid' }),
+            type: Type.Literal('other'),
+          }),
+          links: Type.Object({ self: Type.String({ format: 'uri' }) }),
+        }),
+      },
+    }),
+  };
+
+  server.get(
+    '/items/:id',
+    {
+      schema: {
+        params: Type.Object({
+          id: Type.String(),
+        }),
+        response: objResponse,
+      },
+    },
+    async (req, reply) => {
+      const { items } = fakeDb({ limit: 100, field: 'name', order: 'asc' });
+
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const data = items.find((item) => (item.id = req.params.id))!;
+
+      return reply.obj({
+        id: data.id,
+        type: 'item',
+        attributes: { name: data.name },
+        relationships: {
+          other: {
+            data: {
+              id: data.otherId,
+              type: 'other',
+            },
+          },
+        },
+        links: {},
       });
     },
   );

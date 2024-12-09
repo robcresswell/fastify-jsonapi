@@ -2,7 +2,15 @@ export interface ResourceObject {
   type: string;
   id: string;
   attributes?: Record<string, unknown> & { id?: never };
-  relationships?: Record<string, Pick<ResourceObject, 'id' | 'type' | 'links'>>;
+  relationships?: Record<
+    string,
+    {
+      data?:
+        | Pick<ResourceObject, 'id' | 'type'>
+        | Pick<ResourceObject, 'id' | 'type' | 'links'>[];
+      links?: Record<string, string>;
+    }
+  >;
   links?: Record<string, string | null>;
 }
 
@@ -23,7 +31,7 @@ export type Filters<TFilter extends string> = Record<
   | {
       field: TFilter;
       operator: Operator;
-      value: string | boolean | null;
+      value: string | boolean | number | null;
     }
   | undefined
 >;

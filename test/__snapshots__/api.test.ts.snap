@@ -164,6 +164,10 @@ exports[`api > returns a well formed api 1`] = `
                             "format": "uuid",
                             "type": "string",
                           },
+                          "relationships": {
+                            "properties": {},
+                            "type": "object",
+                          },
                           "type": {
                             "enum": [
                               "item",
@@ -241,7 +245,18 @@ exports[`api > returns a well formed api 1`] = `
                       "type": "object",
                     },
                     "meta": {
-                      "additionalProperties": {},
+                      "properties": {
+                        "count": {
+                          "type": "number",
+                        },
+                      },
+                      "required": [
+                        "count",
+                      ],
+                      "type": "object",
+                    },
+                    "relationships": {
+                      "properties": {},
                       "type": "object",
                     },
                   },
@@ -250,6 +265,165 @@ exports[`api > returns a well formed api 1`] = `
                     "links",
                     "meta",
                     "data",
+                  ],
+                  "type": "object",
+                  Symbol(json-schema-resolver.ignore): true,
+                },
+              },
+            },
+            "description": "Default Response",
+          },
+        },
+      },
+    },
+    "/items/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string",
+            },
+          },
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "data": {
+                      "properties": {
+                        "attributes": {
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                            },
+                          },
+                          "required": [
+                            "name",
+                          ],
+                          "type": "object",
+                        },
+                        "id": {
+                          "format": "uuid",
+                          "type": "string",
+                        },
+                        "relationships": {
+                          "properties": {
+                            "other": {
+                              "properties": {
+                                "data": {
+                                  "properties": {
+                                    "id": {
+                                      "format": "uuid",
+                                      "type": "string",
+                                    },
+                                    "type": {
+                                      "enum": [
+                                        "other",
+                                      ],
+                                      "type": "string",
+                                    },
+                                  },
+                                  "required": [
+                                    "id",
+                                    "type",
+                                  ],
+                                  "type": "object",
+                                },
+                                "links": {
+                                  "properties": {
+                                    "self": {
+                                      "format": "uri",
+                                      "type": "string",
+                                    },
+                                  },
+                                  "required": [
+                                    "self",
+                                  ],
+                                  "type": "object",
+                                },
+                              },
+                              "required": [
+                                "data",
+                                "links",
+                              ],
+                              "type": "object",
+                            },
+                          },
+                          "required": [
+                            "other",
+                          ],
+                          "type": "object",
+                        },
+                        "type": {
+                          "enum": [
+                            "item",
+                          ],
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "id",
+                        "type",
+                        "attributes",
+                        "relationships",
+                      ],
+                      "type": "object",
+                    },
+                    "included": {
+                      "not": {},
+                    },
+                    "jsonapi": {
+                      "properties": {
+                        "profile": {
+                          "items": {
+                            "type": "string",
+                          },
+                          "type": "array",
+                        },
+                        "version": {
+                          "enum": [
+                            "1.1",
+                          ],
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "profile",
+                        "version",
+                      ],
+                      "type": "object",
+                    },
+                    "links": {
+                      "properties": {
+                        "related": {
+                          "format": "uri",
+                          "type": "string",
+                        },
+                        "self": {
+                          "format": "uri",
+                          "type": "string",
+                        },
+                      },
+                      "required": [
+                        "self",
+                      ],
+                      "type": "object",
+                    },
+                    "meta": {
+                      "properties": {},
+                      "type": "object",
+                    },
+                  },
+                  "required": [
+                    "jsonapi",
+                    "data",
+                    "links",
+                    "meta",
                   ],
                   "type": "object",
                   Symbol(json-schema-resolver.ignore): true,
