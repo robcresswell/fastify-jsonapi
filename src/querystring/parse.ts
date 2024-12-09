@@ -38,12 +38,12 @@ export function extractFiltersFromQuery<T extends Record<string, unknown>>(
   query: T,
 ): ParsedFilters<T> {
   const filters = {} as ParsedFilters<T>;
-  Object.entries(query).forEach(([queryKey, queryVal]) => {
+
+  for (const [queryKey, queryVal] of Object.entries(query)) {
     const regexpRes = filterKeyRegex.exec(queryKey);
-    if (!regexpRes) return;
+    if (!regexpRes) continue;
 
     const filterField = regexpRes[1] as ExtractFieldName<keyof T>;
-
     const operator = regexpRes[2] ?? 'eq';
     if (!isOperator(operator)) {
       throw new InvalidFilterOperatorError(
@@ -70,6 +70,7 @@ export function extractFiltersFromQuery<T extends Record<string, unknown>>(
         operator,
         value,
       };
+      continue;
     }
 
     if (typeof value === 'string' || typeof value === 'number') {
@@ -79,7 +80,7 @@ export function extractFiltersFromQuery<T extends Record<string, unknown>>(
         value,
       };
     }
-  });
+  }
 
   return filters;
 }
