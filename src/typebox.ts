@@ -55,7 +55,7 @@ export function querySchema<
   defaultSort?: TSort[number] | `-${TSort[number]}`;
   filters: Record<TFilter, TString | TNumber | TBoolean | typeof nullFilter>;
   include?: TInclude[];
-  maximumPageSize?: number;
+  maxPageSize?: number;
 }) {
   const include = Type.Optional(
     Type.Unsafe<TInclude[number]>({
@@ -78,7 +78,7 @@ export function querySchema<
     {
       sort,
       'page[size]': Type.Optional(
-        Type.Integer({ minimum: 1, maximum: opts.maximumPageSize ?? 100 }),
+        Type.Integer({ minimum: 1, maximum: opts.maxPageSize ?? 100 }),
       ),
       'page[after]': Type.Optional(Type.String()),
       'page[before]': Type.Optional(Type.String()),
