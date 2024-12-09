@@ -81,7 +81,7 @@ export async function createTestServer() {
     .withTypeProvider<TypeBoxTypeProvider>()
     .setValidatorCompiler(TypeBoxValidatorCompiler);
 
-  await server.register(fastifySwagger, { openapi: {} });
+  await server.register(fastifySwagger, { openapi: { openapi: '3.1.1' } });
 
   await server.register(jsonApiPlugin, {
     setNotFoundHandler: true,
