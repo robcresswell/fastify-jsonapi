@@ -52,9 +52,10 @@ async function jsonApiListResponse(
 
 async function jsonApiObjResponse(
   this: FastifyReply,
-  data: ResourceObject,
-  links: Record<string, string | null> = {},
+  opts: { data: ResourceObject; links?: Record<string, string | null> },
 ) {
+  const { data, links = {} } = opts;
+
   if (!links.self) {
     const self = new URL(
       `${this.request.protocol}://${this.request.host}${this.request.url}`,

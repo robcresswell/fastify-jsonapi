@@ -184,17 +184,19 @@ export async function createTestServer() {
       const data = items.find((item) => item.id === req.params.id)!;
 
       return reply.obj({
-        id: data.id,
-        type: 'item',
-        attributes: { name: data.name },
-        relationships: {
-          other: {
-            data: {
-              id: data.otherId,
-              type: 'other',
-            },
-            links: {
-              self: 'https://example.org/others/' + data.otherId,
+        data: {
+          id: data.id,
+          type: 'item',
+          attributes: { name: data.name },
+          relationships: {
+            other: {
+              data: {
+                id: data.otherId,
+                type: 'other',
+              },
+              links: {
+                self: 'https://example.org/others/' + data.otherId,
+              },
             },
           },
         },
