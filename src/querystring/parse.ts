@@ -22,16 +22,6 @@ type ExtractFieldName<T> = T extends `filter[${infer Field}]${infer _Rest}`
 type FilterKeys<T> = keyof T & `filter[${string}]${string}`;
 type FilterFields<T> = ExtractFieldName<FilterKeys<T>>;
 
-// interface FilterInfo<Field extends string> {
-//   field: Field;
-//   operator: Operator;
-//   value: string | boolean | number | null;
-// }
-
-// type ParsedFilters<T> = {
-//   [K in FilterFields<T>]: FilterInfo<K>;
-// };
-
 type ParsedFilters<T> = Filters<FilterFields<T>>;
 
 export function extractFiltersFromQuery<T extends Record<string, unknown>>(
