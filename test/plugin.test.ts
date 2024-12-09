@@ -14,7 +14,7 @@ describe('plugin', () => {
   });
 
   describe('reply.obj()', () => {
-    it.only('creates a json:api obj response', async () => {
+    it('creates a json:api obj response', async () => {
       const res = await server.inject({
         path: '/items/4',
         method: 'GET',
@@ -72,7 +72,7 @@ describe('plugin', () => {
             id: '5',
             attributes: {
               name: 'five',
-              createdAt: '2024-05-05T04:00:00.000Z',
+              createdAt: '2024-05-05T05:00:00.000Z',
               otherId: '456',
             },
           },
@@ -81,7 +81,7 @@ describe('plugin', () => {
             id: '4',
             attributes: {
               name: 'four',
-              createdAt: '2024-04-04T03:00:00.000Z',
+              createdAt: '2024-04-04T04:00:00.000Z',
               otherId: '123',
             },
           },
@@ -312,7 +312,7 @@ describe('plugin', () => {
               id: '5',
               attributes: {
                 name: 'five',
-                createdAt: '2024-05-05T04:00:00.000Z',
+                createdAt: '2024-05-05T05:00:00.000Z',
                 otherId: '456',
               },
             },
@@ -321,7 +321,7 @@ describe('plugin', () => {
               id: '4',
               attributes: {
                 name: 'four',
-                createdAt: '2024-04-04T03:00:00.000Z',
+                createdAt: '2024-04-04T04:00:00.000Z',
                 otherId: '123',
               },
             },
