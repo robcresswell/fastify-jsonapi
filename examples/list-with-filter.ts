@@ -30,7 +30,10 @@ export async function createTestServer() {
     const users = getUsers();
 
     const data = users
-      .filter((user) => user.teamId === filters.teamId.value)
+      .filter((user) => {
+        // If there's a teamId filter, use it, otherwise return all users
+        return filters.teamId ? user.teamId === filters.teamId.value : true;
+      })
       .map(({ id, teamId }) => {
         return {
           type: 'users',

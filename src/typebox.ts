@@ -141,6 +141,7 @@ interface TResourceObject {
       }>
   >;
   links?: Record<string, string | null>;
+  meta?: TRecord<TString>;
 }
 
 function optionalObj(obj?: Record<string, TSchema>) {
@@ -180,6 +181,7 @@ export function objectResponseSchema({
               type: inc.type,
               attributes: Type.Object(inc.attributes ?? {}),
               relationships: optionalObj(inc.relationships),
+              meta: optionalObj(inc.meta),
             }),
           );
         }),
@@ -224,6 +226,7 @@ export function listResponseSchema({
               type: inc.type,
               attributes: Type.Object(inc.attributes ?? {}),
               relationships: optionalObj(inc.relationships),
+              meta: optionalObj(inc.meta),
             }),
           );
         }),
@@ -236,6 +239,7 @@ export function listResponseSchema({
         type: data.type,
         attributes: Type.Object(data.attributes ?? {}),
         relationships: optionalObj(data.relationships),
+        meta: optionalObj(data.meta),
       }),
     ),
   });

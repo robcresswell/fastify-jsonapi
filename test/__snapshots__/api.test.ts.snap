@@ -165,6 +165,10 @@ exports[`api > returns a well formed api 1`] = `
                             "format": "uuid",
                             "type": "string",
                           },
+                          "meta": {
+                            "properties": {},
+                            "type": "object",
+                          },
                           "relationships": {
                             "properties": {},
                             "type": "object",

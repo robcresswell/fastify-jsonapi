@@ -10,6 +10,12 @@
 A collection of functions to help you build [JSON:API](https://jsonapi.org/)
 compliant APIs with [Fastify](https://fastify.dev/)
 
+The goal of this package is to be type-safe and provide good interfaces to build
+APIs against the JSON:API spec. It does not aim to be a holistic solution or
+framework, only a collection of functions and interfaces. These are generally
+easier to use in migrations, for example, or easier to hack around if they don't
+work as expected.
+
 ## Getting Started
 
 1. Install the plugin
@@ -30,4 +36,4 @@ compliant APIs with [Fastify](https://fastify.dev/)
 
 ## Examples
 
-See [EXAMPLES.md](./EXAMPLES.md)
+See [EXAMPLES.md](./EXAMPLES.md) for more detailed examples
