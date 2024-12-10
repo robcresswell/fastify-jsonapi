@@ -154,7 +154,7 @@ export function objectResponseSchema({
   included,
 }: {
   data: Omit<TResourceObject, 'links'>; // Resource links can just go at the top level for object responses
-  meta?: Record<string, TSchema>;
+  meta?: TObject;
   relationships?: TResourceObject['relationships'];
   included?: TResourceObject[];
 }) {
@@ -180,7 +180,7 @@ export function objectResponseSchema({
               type: inc.type,
               attributes: Type.Object(inc.attributes ?? {}),
               relationships: optionalObj(inc.relationships),
-              meta: optionalObj(inc.meta),
+              meta: inc.meta ?? Type.Optional(Type.Object({})),
             }),
           );
         }),
@@ -190,7 +190,7 @@ export function objectResponseSchema({
       self: Type.String({ format: 'uri' }),
       related: Type.Optional(Type.String({ format: 'uri' })),
     }),
-    meta: optionalObj(meta),
+    meta: meta ?? Type.Optional(Type.Object({})),
   });
 }
 
@@ -201,7 +201,7 @@ export function listResponseSchema({
   included,
 }: {
   data: TResourceObject;
-  meta?: Record<string, TSchema>;
+  meta?: TObject;
   relationships?: TResourceObject['relationships'];
   included?: TResourceObject[];
 }) {
@@ -215,7 +215,7 @@ export function listResponseSchema({
       next: Nullable(Type.String({ format: 'uri' })),
       prev: Nullable(Type.String({ format: 'uri' })),
     }),
-    meta: Type.Object(meta ?? { count: Type.Integer() }),
+    meta: meta ?? Type.Object({ count: Type.Integer() }),
     included: Type.Optional(
       Type.Intersect(
         (included ?? []).map((inc) => {
@@ -225,7 +225,7 @@ export function listResponseSchema({
               type: inc.type,
               attributes: Type.Object(inc.attributes ?? {}),
               relationships: optionalObj(inc.relationships),
-              meta: optionalObj(inc.meta),
+              meta: inc.meta ?? Type.Optional(Type.Object({})),
             }),
           );
         }),
@@ -238,7 +238,7 @@ export function listResponseSchema({
         type: data.type,
         attributes: Type.Object(data.attributes ?? {}),
         relationships: optionalObj(data.relationships),
-        meta: optionalObj(data.meta),
+        meta: data.meta ?? Type.Optional(Type.Object({})),
       }),
     ),
   });
