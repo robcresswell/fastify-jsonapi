@@ -6,7 +6,6 @@ import {
   TNumber,
   TObject,
   TOptional,
-  TRecord,
   TSchema,
   TString,
   TUnion,
@@ -137,11 +136,11 @@ interface TResourceObject {
             links?: TObject;
           }>
         >;
-        meta?: TRecord<TString>;
+        meta?: TObject;
       }>
   >;
   links?: Record<string, string | null>;
-  meta?: TRecord<TString>;
+  meta?: TObject;
 }
 
 function optionalObj(obj?: Record<string, TSchema>) {
