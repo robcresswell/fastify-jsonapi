@@ -250,9 +250,15 @@ exports[`api > returns a well formed api 1`] = `
                       "type": "object",
                     },
                     "meta": {
-                      "count": {
-                        "type": "integer",
+                      "properties": {
+                        "count": {
+                          "type": "integer",
+                        },
                       },
+                      "required": [
+                        "count",
+                      ],
+                      "type": "object",
                     },
                     "relationships": {
                       "properties": {},

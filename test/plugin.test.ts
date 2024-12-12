@@ -1,6 +1,8 @@
 import { it, describe, beforeEach, afterEach, expect } from 'vitest';
 import { createTestServer, TestServer } from './helpers.js';
 import { encodePageCursor } from '../src/encoding.js';
+import fastify from 'fastify';
+import { jsonApiPlugin } from '../src/plugin.js';
 
 describe('plugin', () => {
   let server: TestServer;
@@ -475,6 +477,80 @@ describe('plugin', () => {
           },
         ],
       });
+    });
+  });
+
+  describe('error responses', () => {
+    it('returns a 400', async () => {
+      const app = fastify();
+      app.register(jsonApiPlugin);
+      app.get('/', (_req, reply) => {
+        reply.badRequest();
+      });
+
+      const res = await app.inject({ method: 'GET', path: '/' });
+
+      expect(res.statusCode).toEqual(400);
+    });
+
+    it('returns a 401', async () => {
+      const app = fastify();
+      app.register(jsonApiPlugin);
+      app.get('/', (_req, reply) => {
+        reply.unauthorized();
+      });
+
+      const res = await app.inject({ method: 'GET', path: '/' });
+
+      expect(res.statusCode).toEqual(401);
+    });
+
+    it('returns a 402', async () => {
+      const app = fastify();
+      app.register(jsonApiPlugin);
+      app.get('/', (_req, reply) => {
+        reply.paymentRequired();
+      });
+
+      const res = await app.inject({ method: 'GET', path: '/' });
+
+      expect(res.statusCode).toEqual(402);
+    });
+
+    it('returns a 403', async () => {
+      const app = fastify();
+      app.register(jsonApiPlugin);
+      app.get('/', (_req, reply) => {
+        reply.forbidden();
+      });
+
+      const res = await app.inject({ method: 'GET', path: '/' });
+
+      expect(res.statusCode).toEqual(403);
+    });
+
+    it('returns a 404', async () => {
+      const app = fastify();
+      app.register(jsonApiPlugin);
+      app.get('/', (_req, reply) => {
+        reply.notFound();
+      });
+
+      const res = await app.inject({ method: 'GET', path: '/' });
+
+      expect(res.statusCode).toEqual(404);
+    });
+
+    it('returns a 500', async () => {
+      const app = fastify();
+      app.register(jsonApiPlugin);
+      app.get('/', (_req, reply) => {
+        reply.internalServerError();
+      });
+
+      const res = await app.inject({ method: 'GET', path: '/' });
+
+      expect(res.statusCode).toEqual(500);
     });
   });
 });

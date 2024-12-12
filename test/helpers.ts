@@ -112,9 +112,9 @@ export async function createTestServer() {
           otherId: Type.String(),
         },
       },
-      meta: {
+      meta: Type.Object({
         count: Type.Integer(),
-      },
+      }),
     }),
   };
 

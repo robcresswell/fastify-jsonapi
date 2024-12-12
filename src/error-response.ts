@@ -1,5 +1,6 @@
 import { STATUS_CODES } from 'node:http';
 import { JSONAPI_VERSION, PAGINATION_PROFILE } from './constants.js';
+import { FastifyReply } from 'fastify';
 
 interface HttpError {
   statusCode: string | number;
@@ -41,4 +42,10 @@ export function errResponse(err: unknown) {
   const status = err.statusCode.toString();
 
   return createErrBody(status, err.message);
+}
+
+export function errReply(status: number) {
+  return function (this: FastifyReply, detail?: string) {
+    return this.status(status).send(createErrBody(status, detail));
+  };
 }
