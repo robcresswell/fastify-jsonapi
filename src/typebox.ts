@@ -119,25 +119,27 @@ interface TResourceObject {
   type: TLiteral<string>;
   id: TString | TNumber;
   attributes?: Record<string, TSchema>;
-  relationships?: Record<
-    string,
-    | TObject<{
-        data: TObject<{
-          id: TString;
-          type: TLiteral;
-        }>;
-        links?: TObject;
-      }>
-    | TObject<{
-        data: TArray<
-          TObject<{
+  relationships?: TObject<
+    Record<
+      string,
+      | TObject<{
+          data: TObject<{
             id: TString;
             type: TLiteral;
-            links?: TObject;
-          }>
-        >;
-        meta?: TObject;
-      }>
+          }>;
+          links?: TObject;
+        }>
+      | TObject<{
+          data: TArray<
+            TObject<{
+              id: TString;
+              type: TLiteral;
+              links?: TObject;
+            }>
+          >;
+          meta?: TObject;
+        }>
+    >
   >;
   links?: Record<string, string | null>;
   meta?: TObject;
