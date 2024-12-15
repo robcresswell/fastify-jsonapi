@@ -19,14 +19,14 @@ function isHttpErr(err: unknown): err is HttpError {
   );
 }
 
-function createErrBody(status: string | number = 500, detail?: string) {
+function createErrBody(status: string | number = '500', detail?: string) {
   const title = STATUS_CODES[status] ?? 'Internal Server Error';
 
   return {
     jsonapi: { version: JSONAPI_VERSION, profile: [PAGINATION_PROFILE] },
     errors: [
       {
-        status,
+        status: status.toString(),
         title,
         detail: detail ?? title,
       },
@@ -36,7 +36,7 @@ function createErrBody(status: string | number = 500, detail?: string) {
 
 export function errResponse(err: unknown) {
   if (!isHttpErr(err)) {
-    return createErrBody(500);
+    return createErrBody('500');
   }
 
   const status = err.statusCode.toString();
