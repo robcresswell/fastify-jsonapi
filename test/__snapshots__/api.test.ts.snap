@@ -317,52 +317,46 @@ exports[`api > returns a well formed api 1`] = `
                           "type": "string",
                         },
                         "relationships": {
-                          "properties": {
-                            "other": {
-                              "properties": {
-                                "data": {
-                                  "properties": {
-                                    "id": {
-                                      "format": "uuid",
-                                      "type": "string",
-                                    },
-                                    "type": {
-                                      "enum": [
-                                        "other",
-                                      ],
-                                      "type": "string",
-                                    },
+                          "other": {
+                            "properties": {
+                              "data": {
+                                "properties": {
+                                  "id": {
+                                    "format": "uuid",
+                                    "type": "string",
                                   },
-                                  "required": [
-                                    "id",
-                                    "type",
-                                  ],
-                                  "type": "object",
-                                },
-                                "links": {
-                                  "properties": {
-                                    "self": {
-                                      "format": "uri",
-                                      "type": "string",
-                                    },
+                                  "type": {
+                                    "enum": [
+                                      "other",
+                                    ],
+                                    "type": "string",
                                   },
-                                  "required": [
-                                    "self",
-                                  ],
-                                  "type": "object",
                                 },
+                                "required": [
+                                  "id",
+                                  "type",
+                                ],
+                                "type": "object",
                               },
-                              "required": [
-                                "data",
-                                "links",
-                              ],
-                              "type": "object",
+                              "links": {
+                                "properties": {
+                                  "self": {
+                                    "format": "uri",
+                                    "type": "string",
+                                  },
+                                },
+                                "required": [
+                                  "self",
+                                ],
+                                "type": "object",
+                              },
                             },
+                            "required": [
+                              "data",
+                              "links",
+                            ],
+                            "type": "object",
                           },
-                          "required": [
-                            "other",
-                          ],
-                          "type": "object",
                         },
                         "type": {
                           "enum": [
