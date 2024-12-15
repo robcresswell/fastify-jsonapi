@@ -145,10 +145,6 @@ interface TResourceObject {
   meta?: TObject;
 }
 
-function optionalObj(obj?: Record<string, TSchema>) {
-  return obj ? Type.Object(obj) : Type.Optional(Type.Object({}));
-}
-
 export function objectResponseSchema({
   data,
   meta,
@@ -171,7 +167,7 @@ export function objectResponseSchema({
       id,
       type,
       attributes: Type.Object(attributes ?? {}),
-      relationships: optionalObj(relationships),
+      relationships: relationships ?? Type.Optional(Type.Object({})),
     }),
     included: Type.Optional(
       Type.Intersect(
@@ -181,7 +177,8 @@ export function objectResponseSchema({
               id: inc.id,
               type: inc.type,
               attributes: Type.Object(inc.attributes ?? {}),
-              relationships: optionalObj(inc.relationships),
+              relationships:
+                inc.relationships ?? Type.Optional(Type.Object({})),
               meta: inc.meta ?? Type.Optional(Type.Object({})),
             }),
           );
@@ -226,20 +223,21 @@ export function listResponseSchema({
               id: inc.id,
               type: inc.type,
               attributes: Type.Object(inc.attributes ?? {}),
-              relationships: optionalObj(inc.relationships),
+              relationships:
+                inc.relationships ?? Type.Optional(Type.Object({})),
               meta: inc.meta ?? Type.Optional(Type.Object({})),
             }),
           );
         }),
       ),
     ),
-    relationships: optionalObj(relationships),
+    relationships: relationships ?? Type.Optional(Type.Object({})),
     data: Type.Array(
       Type.Object({
         id: data.id,
         type: data.type,
         attributes: Type.Object(data.attributes ?? {}),
-        relationships: optionalObj(data.relationships),
+        relationships: data.relationships ?? Type.Optional(Type.Object({})),
         meta: data.meta ?? Type.Optional(Type.Object({})),
       }),
     ),
