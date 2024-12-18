@@ -154,14 +154,14 @@ export async function createTestServer() {
         id: Type.String({ format: 'uuid' }),
         type: Type.Literal('item'),
         attributes: { name: Type.String() },
-      },
-      relationships: {
-        other: Type.Object({
-          data: Type.Object({
-            id: Type.String({ format: 'uuid' }),
-            type: Type.Literal('other'),
+        relationships: Type.Object({
+          other: Type.Object({
+            data: Type.Object({
+              id: Type.String({ format: 'uuid' }),
+              type: Type.Literal('other'),
+            }),
+            links: Type.Object({ self: Type.String({ format: 'uri' }) }),
           }),
-          links: Type.Object({ self: Type.String({ format: 'uri' }) }),
         }),
       },
     }),

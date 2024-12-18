@@ -148,7 +148,6 @@ interface TResourceObject {
 export function objectResponseSchema({
   data,
   meta,
-  relationships,
   included,
 }: {
   data: Omit<TResourceObject, 'links'>; // Resource links can just go at the top level for object responses
@@ -156,7 +155,7 @@ export function objectResponseSchema({
   relationships?: TResourceObject['relationships'];
   included?: TResourceObject[];
 }) {
-  const { id, type, attributes } = data;
+  const { id, type, attributes, relationships } = data;
 
   return Type.Object({
     jsonapi: Type.Object({
