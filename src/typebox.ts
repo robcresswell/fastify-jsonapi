@@ -166,7 +166,9 @@ export function objectResponseSchema({
     data: Type.Object({
       id,
       type,
-      attributes: Type.Object(attributes ?? {}),
+      attributes: attributes
+        ? Type.Object(attributes)
+        : Type.Optional(Type.Object({})),
       relationships: relationships ?? Type.Optional(Type.Object({})),
     }),
     included: Type.Optional(
