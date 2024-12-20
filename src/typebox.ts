@@ -169,6 +169,7 @@ export function objectResponseSchema({
         ? Type.Object(attributes)
         : Type.Optional(Type.Object({})),
       relationships: relationships ?? Type.Optional(Type.Object({})),
+      meta: data.meta ?? Type.Optional(Type.Object({})),
     }),
     included: Type.Optional(
       Type.Intersect(
