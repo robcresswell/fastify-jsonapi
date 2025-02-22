@@ -12,6 +12,7 @@ export interface ResourceObject {
     }
   >;
   links?: Record<string, string | null>;
+  meta?: Record<string, unknown>;
 }
 
 type RemovePrefix<T extends string> = T extends `-${infer U}` ? U : T;
