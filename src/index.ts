@@ -9,3 +9,4 @@ export {
   InvalidFilterOperatorError,
   RangePaginationNotSupportedError,
 } from './errors.js';
+export { errResponse } from './error-response.js';
