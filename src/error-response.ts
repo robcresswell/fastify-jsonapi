@@ -19,7 +19,10 @@ function isHttpErr(err: unknown): err is HttpError {
   );
 }
 
-function createErrBody(status: string | number = '500', detail?: string) {
+export function createErrBody(
+  status: string | number = '500',
+  detail?: string,
+) {
   const title = STATUS_CODES[status] ?? 'Internal Server Error';
 
   return {
