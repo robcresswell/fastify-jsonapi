@@ -37,4 +37,4 @@ export type Filters<TFilter extends string> = Record<
   | undefined
 >;
 
-export type Operator = 'eq' | 'gte' | 'gt' | 'lt' | 'lte' | 'ne';
+export type Operator = 'eq' | 'gte' | 'gt' | 'lt' | 'lte' | 'ne' | 'like';
