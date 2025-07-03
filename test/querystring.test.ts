@@ -166,7 +166,7 @@ describe('querystring parser', () => {
       [
         { 'filter[name][bar]': '5' },
         new Error(
-          "Invalid operator 'bar' in filter[name][bar]=5. Operators must be one of 'eq', 'gte', 'gt', 'lt', 'lte', 'ne'",
+          "Invalid operator 'bar' in filter[name][bar]=5. Operators must be one of 'eq', 'gte', 'gt', 'lt', 'lte', 'ne', 'like'",
         ),
       ],
       [

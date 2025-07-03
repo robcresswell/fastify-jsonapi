@@ -132,6 +132,14 @@ exports[`api > returns a well formed api 1`] = `
               "type": "string",
             },
           },
+          {
+            "in": "query",
+            "name": "filter[name][like]",
+            "required": false,
+            "schema": {
+              "type": "string",
+            },
+          },
         ],
         "responses": {
           "200": {
