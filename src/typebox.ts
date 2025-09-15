@@ -73,11 +73,17 @@ export function querySchema<
     }),
   );
 
+  const maxPageSize = opts.maxPageSize ?? 100;
+
   const querySchema = Type.Object(
     {
       sort,
       'page[size]': Type.Optional(
-        Type.Integer({ minimum: 1, maximum: opts.maxPageSize ?? 100 }),
+        Type.Integer({
+          minimum: 1,
+          maximum: maxPageSize,
+          default: maxPageSize,
+        }),
       ),
       'page[after]': Type.Optional(Type.String()),
       'page[before]': Type.Optional(Type.String()),

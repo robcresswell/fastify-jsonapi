@@ -43,6 +43,7 @@ exports[`api > returns a well formed api 1`] = `
             "name": "page[size]",
             "required": false,
             "schema": {
+              "default": 100,
               "maximum": 100,
               "minimum": 1,
               "type": "integer",
