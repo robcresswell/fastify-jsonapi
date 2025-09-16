@@ -64,6 +64,7 @@ describe('querystring parser', () => {
       field: 'id',
       order: 'desc',
       val: id,
+      cmp: 'lte',
     });
   });
 
@@ -85,10 +86,11 @@ describe('querystring parser', () => {
       field: 'name',
       order: 'asc',
       val: name,
+      cmp: 'gte',
     });
   });
 
-  it('handles paging backawards', () => {
+  it('handles paging backwards', () => {
     const name = 'foobar';
     const cursor = encodePageCursor({
       field: 'name',
@@ -106,6 +108,7 @@ describe('querystring parser', () => {
       field: 'name',
       order: 'asc',
       val: name,
+      cmp: 'lt',
     });
   });
 

@@ -85,30 +85,31 @@ interface Pagination<TSort extends string> {
 export function extractPaginationFromQuery<TSort extends string>(
   query: Pagination<TSort>,
 ) {
-  if ('page[after]' in query && 'page[before]' in query) {
+  const after = query['page[after]'];
+  const before = query['page[before]'];
+
+  if (after && before) {
     throw new RangePaginationNotSupportedError();
   }
 
   const pageSize = query['page[size]'];
   const limit = pageSize ?? 100;
 
-  const cursor =
-    'page[after]' in query
-      ? query['page[after]']
-      : 'page[before]' in query
-      ? query['page[before]']
-      : undefined;
+  const cursor = after ?? before;
 
   // If we have a cursor, then we ignore any sort instructions and continue
   // paging with the cursor information
   if (cursor) {
     const { field, val, order } = decodePageCursor(cursor);
+    const cmp: 'lte' | 'gte' | 'lt' | 'gt' =
+      order === 'asc' ? (after ? 'gte' : 'lt') : after ? 'lte' : 'gt';
 
     return {
       limit,
       field: field as RemovePrefix<TSort>,
       order,
       val,
+      cmp,
     };
   }
 
