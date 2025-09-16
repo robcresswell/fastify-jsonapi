@@ -94,22 +94,19 @@ export function extractPaginationFromQuery<TSort extends string>(
 
   const pageSize = query['page[size]'];
   const limit = pageSize ?? 100;
-
   const cursor = after ?? before;
 
   // If we have a cursor, then we ignore any sort instructions and continue
   // paging with the cursor information
   if (cursor) {
     const { field, val, order } = decodePageCursor(cursor);
-    const cmp: 'lte' | 'gte' | 'lt' | 'gt' =
-      order === 'asc' ? (after ? 'gte' : 'lt') : after ? 'lte' : 'gt';
 
     return {
       limit,
       field: field as RemovePrefix<TSort>,
       order,
       val,
-      cmp,
+      direction: after ? 'forward' : 'backward',
     };
   }
 

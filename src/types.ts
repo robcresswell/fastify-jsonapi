@@ -21,6 +21,7 @@ export interface Pagination<TSort extends string> {
   limit: number;
   field: RemovePrefix<TSort>;
   order: 'asc' | 'desc';
+  direction?: 'forward' | 'backward';
   val?: string;
 }
 

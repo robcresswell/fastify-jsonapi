@@ -64,7 +64,7 @@ describe('querystring parser', () => {
       field: 'id',
       order: 'desc',
       val: id,
-      cmp: 'lte',
+      direction: 'forward',
     });
   });
 
@@ -86,7 +86,7 @@ describe('querystring parser', () => {
       field: 'name',
       order: 'asc',
       val: name,
-      cmp: 'gte',
+      direction: 'forward',
     });
   });
 
@@ -108,7 +108,7 @@ describe('querystring parser', () => {
       field: 'name',
       order: 'asc',
       val: name,
-      cmp: 'lt',
+      direction: 'backward',
     });
   });
 
