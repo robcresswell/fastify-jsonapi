@@ -1,6 +1,6 @@
 {
   "name": "@robcresswell/fastify-jsonapi",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "type": "module",
   "main": "dist/index.js",
   "exports": {
@@ -50,8 +50,8 @@
     "fastify-plugin": "^5.0.1"
   },
   "optionalDependencies": {
-    "@fastify/type-provider-typebox": "^5.1.0",
-    "@sinclair/typebox": "^0.34.12"
+    "@fastify/type-provider-typebox": "^5.2.0",
+    "@sinclair/typebox": "^0.34.41"
   },
   "devDependencies": {
     "@eslint/js": "^9.16.0",

@@ -33,7 +33,9 @@ export function assembleLinks(opts: {
     links.prev = prevUrl.toString();
   }
 
-  if (!hasMore) return links;
+  // If there are more items, or we're paging backwards, then we need to add a
+  // next link, otherwise we can return
+  if (!hasMore && !self.searchParams.has('page[before]')) return links;
 
   const lastItem = data[data.length - 1];
 

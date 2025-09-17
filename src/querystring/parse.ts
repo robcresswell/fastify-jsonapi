@@ -106,7 +106,7 @@ export function extractPaginationFromQuery<TSort extends string>(
       field: field as RemovePrefix<TSort>,
       order,
       val,
-      direction: after ? 'forward' : 'backward',
+      direction: after ? ('forward' as const) : ('backward' as const),
     };
   }
 
