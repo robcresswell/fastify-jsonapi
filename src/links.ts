@@ -27,8 +27,8 @@ export function assembleLinks(opts: {
 
   const after = self.searchParams.get('page[after]');
   if (after) {
-    self.searchParams.delete('page[after]');
     const prevUrl = new URL(self);
+    prevUrl.searchParams.delete('page[after]');
     prevUrl.searchParams.set('page[before]', after);
     links.prev = prevUrl.toString();
   }
@@ -46,6 +46,7 @@ export function assembleLinks(opts: {
 
   const val = lastItem.attributes[field];
   const nextUrl = new URL(self);
+  nextUrl.searchParams.delete('page[before]');
   nextUrl.searchParams.set(
     'page[after]',
     encodePageCursor({ field, val, order }),
