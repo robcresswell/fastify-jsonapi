@@ -21,37 +21,65 @@ export function assembleLinks(opts: {
     next: null,
   };
 
-  if (data.length === 0) {
+  // If the list is empty, we can't page in either direction; return early
+  const firstItem = data[0];
+  if (!firstItem) {
     return links;
   }
-
-  const after = self.searchParams.get('page[after]');
-  if (after) {
-    const prevUrl = new URL(self);
-    prevUrl.searchParams.delete('page[after]');
-    prevUrl.searchParams.set('page[before]', after);
-    links.prev = prevUrl.toString();
-  }
-
-  // If there are more items, or we're paging backwards, then we need to add a
-  // next link, otherwise we can return
-  if (!hasMore && !self.searchParams.has('page[before]')) return links;
-
-  const lastItem = data[data.length - 1];
 
   const { field, order, limit } = opts.pagination;
   const pageSize = limit.toString();
 
+  // We need to assemble a base pagination URL that will be used to generate the
+  // prev and next links. Maintain the same page size and any filter parameters,
+  // but pagination parameters will be derived from the data
+  const basePaginationUrl = new URL(self.pathname, self.origin);
+  basePaginationUrl.searchParams.set('page[size]', pageSize);
+  self.searchParams.forEach((value, key) => {
+    if (key.startsWith('filter[')) {
+      basePaginationUrl.searchParams.set(key, value);
+    }
+  });
+
+  // There's a few cases to determine whether the page we're moving to has a
+  // prev link. First we need to check if the pagination data is valid and set
+  // on the first item. Then we do checks depending on paging direction. If
+  // we're paging forward, there _must_ be a previous page, because we were just
+  // on it. If we're paging backwards, then we can use the hasMore flag because
+  // the sort order is reversed.
+  const calculatePrevLink =
+    opts.pagination.direction === 'forward' ||
+    (opts.pagination.direction === 'backward' && hasMore);
+
+  if (
+    calculatePrevLink &&
+    firstItem.attributes &&
+    field in firstItem.attributes
+  ) {
+    const prevUrl = new URL(basePaginationUrl);
+    prevUrl.searchParams.set(
+      'page[before]',
+      encodePageCursor({ field, val: firstItem.attributes[field], order }),
+    );
+    links.prev = prevUrl.toString();
+  }
+
+  // Slightly different for the next link. If we're paging backwards, we already
+  // know there's a next page. Otherwise, check if there are more items
+  const calculateNextLink = opts.pagination.direction === 'backward' || hasMore;
+
+  if (!calculateNextLink) return links;
+
+  const lastItem = data[data.length - 1];
+
   if (!lastItem?.attributes || !(field in lastItem.attributes)) return links;
 
-  const val = lastItem.attributes[field];
-  const nextUrl = new URL(self);
+  const nextUrl = new URL(basePaginationUrl);
   nextUrl.searchParams.delete('page[before]');
   nextUrl.searchParams.set(
     'page[after]',
-    encodePageCursor({ field, val, order }),
+    encodePageCursor({ field, val: lastItem.attributes[field], order }),
   );
-  nextUrl.searchParams.set('page[size]', pageSize);
   links.next = nextUrl.toString();
 
   return links;
